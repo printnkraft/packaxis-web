@@ -1,0 +1,627 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block breadcrumbs %}
+{% include 'components/breadcrumbs.html' with items=breadcrumb_items %}
+{% endblock %}
+
+{% block content %}
+<!-- Products Hero Section -->
+<section class="products-hero">
+  <div class="container">
+    <div class="products-hero__content">
+      <span class="products-hero__badge">
+        <span class="material-symbols-rounded">inventory_2</span>
+        Product Catalog
+      </span>
+      <h1 class="products-hero__title">Premium Packaging Solutions</h1>
+      <p class="products-hero__subtitle">Discover our curated collection of eco-friendly paper bags and packaging designed for Canadian businesses.</p>
+    </div>
+  </div>
+</section>
+
+<!-- Main Products Section -->
+<section class="products-section">
+  <div class="container">
+    <div class="products-layout">
+      <!-- Sidebar Filters -->
+      <aside class="products-sidebar" aria-label="Product filters">
+        <!-- Categories Filter (Hierarchical) -->
+        <div class="filter-card">
+          <h2 class="filter-card__title">
+            <span class="material-symbols-rounded">category</span>
+            Categories
+          </h2>
+          <ul class="filter-list filter-list--hierarchical" role="tree" aria-label="Product categories">
+            <!-- All Products -->
+            <li class="filter-item" role="treeitem">
+              <a href="/products/" class="filter-link {% if not selected_category %}filter-link--active{% endif %}" data-category="">
+                <span class="material-symbols-rounded filter-link__icon">inventory_2</span>
+                <span class="filter-link__text">All Products</span>
+                <span class="filter-link__count">{{ total_products }}</span>
+              </a>
+            </li>
+            
+            {% for category in categories %}
+            <li class="filter-item filter-item--parent {% if selected_main_category.slug == category.slug or selected_category == category.slug %}filter-item--expanded{% endif %}" role="treeitem" aria-expanded="{% if selected_main_category.slug == category.slug or selected_category == category.slug %}true{% else %}false{% endif %}">
+              <div class="filter-item__header">
+                <a href="?category={{ category.slug }}" class="filter-link {% if selected_category == category.slug %}filter-link--active{% endif %}" data-category="{{ category.slug }}">
+                  {% if category.icon %}
+                  <span class="material-symbols-rounded filter-link__icon">{{ category.icon }}</span>
+                  {% else %}
+                  <span class="material-symbols-rounded filter-link__icon">folder</span>
+                  {% endif %}
+                  <span class="filter-link__text">{{ category.name }}</span>
+                </a>
+                {% if category.subcategories.all %}
+                <button type="button" class="filter-toggle" aria-label="Toggle {{ category.name }} subcategories" onclick="toggleCategoryExpand(this)">
+                  <span class="material-symbols-rounded">expand_more</span>
+                </button>
+                {% endif %}
+              </div>
+              
+              {% if category.subcategories.all %}
+              <ul class="filter-sublist" role="group">
+                {% for subcategory in category.subcategories.all %}
+                {% if subcategory.is_active %}
+                <li class="filter-item filter-item--child" role="treeitem">
+                  <a href="?category={{ subcategory.slug }}" class="filter-link filter-link--sub {% if selected_category == subcategory.slug %}filter-link--active{% endif %}" data-category="{{ subcategory.slug }}">
+                    {% if subcategory.icon %}
+                    <span class="material-symbols-rounded filter-link__icon">{{ subcategory.icon }}</span>
+                    {% else %}
+                    <span class="material-symbols-rounded filter-link__icon">subdirectory_arrow_right</span>
+                    {% endif %}
+                    <span class="filter-link__text">{{ subcategory.name }}</span>
+                  </a>
+                </li>
+                {% endif %}
+                {% endfor %}
+              </ul>
+              {% endif %}
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Search -->
+        <div class="filter-card">
+          <h2 class="filter-card__title">
+            <span class="material-symbols-rounded">search</span>
+            Search
+          </h2>
+          <form method="GET" class="search-form" role="search" aria-label="Search products" id="products-search-form">
+            {% if selected_category %}
+            <input type="hidden" name="category" value="{{ selected_category }}">
+            {% endif %}
+            <div class="search-input-wrapper">
+              <span class="material-symbols-rounded search-icon">search</span>
+              <input 
+                type="search" 
+                name="search" 
+                id="products-search-input"
+                placeholder="Search products..." 
+                value="{{ search_query|default:'' }}" 
+                class="search-input" 
+                aria-label="Search products"
+                autocomplete="off">
+              {% if search_query %}
+              <button type="button" class="search-clear-btn" id="search-clear-btn" aria-label="Clear search">
+                <span class="material-symbols-rounded">close</span>
+              </button>
+              {% endif %}
+            </div>
+            <button type="submit" class="btn btn-primary btn-search">
+              Search
+            </button>
+          </form>
+        </div>
+
+        <!-- Quick Info -->
+        <div class="filter-card filter-card--highlight">
+          <div class="quick-info">
+            <span class="material-symbols-rounded quick-info__icon">local_shipping</span>
+            <div class="quick-info__content">
+              <strong>Free Shipping</strong>
+              <span>On orders over $2,000</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+      
+      <!-- Products Grid -->
+      <div class="products-main">
+        <!-- Results Header / Toolbar -->
+        <div class="products-toolbar">
+          <div class="products-toolbar__info">
+            <span class="products-toolbar__count" id="products-count">{{ total_products }} product{{ total_products|pluralize }}</span>
+            {% if selected_category %}
+            <span class="products-toolbar__filter" data-filter-type="category">
+              in <strong>{{ selected_category_obj.name|default:selected_category|title }}</strong>
+              <a href="{% if search_query %}?search={{ search_query }}{% else %}/products/{% endif %}" class="products-toolbar__clear" aria-label="Clear category filter">
+                <span class="material-symbols-rounded">close</span>
+              </a>
+            </span>
+            {% endif %}
+            {% if search_query %}
+            <span class="products-toolbar__filter" data-filter-type="search">
+              matching "<strong id="current-search-query">{{ search_query }}</strong>"
+              <a href="{% if selected_category %}?category={{ selected_category }}{% else %}/products/{% endif %}" class="products-toolbar__clear" aria-label="Clear search">
+                <span class="material-symbols-rounded">close</span>
+              </a>
+            </span>
+            {% endif %}
+          </div>
+          <div class="products-toolbar__actions">
+            <!-- Sort Dropdown -->
+            <div class="sort-dropdown">
+              <label for="sort-select" class="sort-dropdown__label">Sort by:</label>
+              <select id="sort-select" class="sort-dropdown__select" aria-label="Sort products">
+                <option value="newest" {% if sort_option == 'newest' %}selected{% endif %}>Newest</option>
+                <option value="price-asc" {% if sort_option == 'price-asc' %}selected{% endif %}>Price: Low to High</option>
+                <option value="price-desc" {% if sort_option == 'price-desc' %}selected{% endif %}>Price: High to Low</option>
+                <option value="name-asc" {% if sort_option == 'name-asc' %}selected{% endif %}>Name: A to Z</option>
+                <option value="name-desc" {% if sort_option == 'name-desc' %}selected{% endif %}>Name: Z to A</option>
+              </select>
+            </div>
+            <div class="view-toggle" role="group" aria-label="View options">
+              <button class="view-toggle__btn view-toggle__btn--active" data-view="grid" aria-label="Grid view" aria-pressed="true">
+                <span class="material-symbols-rounded">grid_view</span>
+              </button>
+              <button class="view-toggle__btn" data-view="list" aria-label="List view" aria-pressed="false">
+                <span class="material-symbols-rounded">view_list</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div class="products-loading" id="products-loading" hidden>
+          <div class="products-loading__spinner"></div>
+          <span>Loading products...</span>
+        </div>
+
+        {% if products %}
+        <!-- Products Grid -->
+        <div id="product-grid" class="products-grid" role="list" aria-label="Product list">
+          {% for product in products %}
+          <article class="product-card-v2" role="listitem" style="animation-delay: {{ forloop.counter0 }}00ms;">
+            <a href="/products/{{ product.id }}/" class="product-card-v2__link" aria-label="View {{ product.name }} details">
+              <!-- Product Image -->
+              <div class="product-card-v2__image">
+                {% if product.images.first %}
+                <img 
+                  src="{{ product.images.first.image.url }}" 
+                  alt="{{ product.name }}"
+                  loading="lazy"
+                  decoding="async">
+                {% else %}
+                <div class="product-card-v2__placeholder">
+                  <span class="material-symbols-rounded">inventory_2</span>
+                </div>
+                {% endif %}
+                
+                <!-- Badges -->
+                <div class="product-card-v2__badges">
+                  {% if product.stock_qty > 0 %}
+                  <span class="product-badge product-badge--success">In Stock</span>
+                  {% else %}
+                  <span class="product-badge product-badge--danger">Out of Stock</span>
+                  {% endif %}
+                </div>
+
+                <!-- Quick Actions Overlay -->
+                <div class="product-card-v2__overlay">
+                  <button 
+                    class="product-card-v2__quick-view"
+                    aria-label="Quick view {{ product.name }}">
+                    <span class="material-symbols-rounded">visibility</span>
+                  </button>
+                  <button 
+                    class="product-card-v2__wishlist"
+                    data-product-id="{{ product.id }}"
+                    aria-label="Add {{ product.name }} to wishlist">
+                    <span class="material-symbols-rounded">favorite_border</span>
+                  </button>
+                </div>
+                
+                <!-- Bulk Pricing Button -->
+                {% if product.pricing_tiers.all %}
+                <button 
+                  type="button"
+                  class="bulk-pricing-trigger"
+                  onclick="openBulkPricingModal(event, this)"
+                  data-product-name="{{ product.name }}"
+                  data-product-image="{% if product.images.first %}{{ product.images.first.image.url }}{% else %}{% endif %}"
+                  data-retail-price="{{ product.retail_price }}"
+                  data-pricing-tiers='[{% for tier in product.pricing_tiers.all %}{"min": {{ tier.min_qty }}, "max": {{ tier.max_qty }}, "price": "{{ tier.wholesale_price }}"}{% if not forloop.last %},{% endif %}{% endfor %}]'
+                  aria-label="View bulk pricing for {{ product.name }}">
+                  <span class="material-symbols-rounded">sell</span>
+                  <span>Bulk Pricing</span>
+                </button>
+                {% endif %}
+              </div>
+              
+              <!-- Product Info -->
+              <div class="product-card-v2__content">
+                {% if product.category %}
+                <span class="product-card-v2__category">{{ product.category.name }}</span>
+                {% endif %}
+                
+                <h3 class="product-card-v2__title">{{ product.name }}</h3>
+                <p class="product-card-v2__description">{{ product.description|truncatewords:15 }}</p>
+                
+                <div class="product-card-v2__footer">
+                  <div class="product-card-v2__price">
+                    <span class="product-card-v2__price-value">${{ product.retail_price }}</span>
+                    <span class="product-card-v2__price-unit">/unit</span>
+                  </div>
+                </div>
+              </div>
+            </a>
+            
+            <!-- Add to Cart Button -->
+            <button 
+              data-add-to-cart
+              data-product-id="{{ product.id }}"
+              data-product-name="{{ product.name }}"
+              data-price="{{ product.retail_price }}"
+              data-image="{% if product.images.first %}{{ product.images.first.image.url }}{% endif %}"
+              class="product-card-v2__cart-btn" 
+              {% if product.stock_qty == 0 %}disabled aria-disabled="true"{% endif %}
+              aria-label="Add {{ product.name }} to cart">
+              <span class="material-symbols-rounded">add_shopping_cart</span>
+              <span>Add to Cart</span>
+            </button>
+          </article>
+          {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if paginator.num_pages > 1 %}
+        <nav class="pagination" aria-label="Product list pagination">
+          <div class="pagination__info">
+            Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ total_products }} products
+          </div>
+          <ul class="pagination__list">
+            <!-- Previous Page -->
+            {% if page_obj.has_previous %}
+            <li>
+              <a href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}" 
+                 class="pagination__link pagination__link--prev" 
+                 aria-label="Go to previous page">
+                <span class="material-symbols-rounded">chevron_left</span>
+              </a>
+            </li>
+            {% else %}
+            <li>
+              <span class="pagination__link pagination__link--prev pagination__link--disabled" aria-disabled="true">
+                <span class="material-symbols-rounded">chevron_left</span>
+              </span>
+            </li>
+            {% endif %}
+            
+            <!-- First page if not in range -->
+            {% if page_range.0 > 1 %}
+            <li>
+              <a href="?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}" 
+                 class="pagination__link">1</a>
+            </li>
+            {% if page_range.0 > 2 %}
+            <li><span class="pagination__ellipsis">…</span></li>
+            {% endif %}
+            {% endif %}
+            
+            <!-- Page Numbers -->
+            {% for page_num in page_range %}
+            <li>
+              {% if page_num == page_obj.number %}
+              <span class="pagination__link pagination__link--active" aria-current="page">{{ page_num }}</span>
+              {% else %}
+              <a href="?page={{ page_num }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}" 
+                 class="pagination__link">{{ page_num }}</a>
+              {% endif %}
+            </li>
+            {% endfor %}
+            
+            <!-- Last page if not in range -->
+            {% if page_range|last < paginator.num_pages %}
+            {% if page_range|last < paginator.num_pages|add:"-1" %}
+            <li><span class="pagination__ellipsis">…</span></li>
+            {% endif %}
+            <li>
+              <a href="?page={{ paginator.num_pages }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}" 
+                 class="pagination__link">{{ paginator.num_pages }}</a>
+            </li>
+            {% endif %}
+            
+            <!-- Next Page -->
+            {% if page_obj.has_next %}
+            <li>
+              <a href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&search={{ search_query }}{% endif %}{% if sort_option %}&sort={{ sort_option }}{% endif %}" 
+                 class="pagination__link pagination__link--next" 
+                 aria-label="Go to next page">
+                <span class="material-symbols-rounded">chevron_right</span>
+              </a>
+            </li>
+            {% else %}
+            <li>
+              <span class="pagination__link pagination__link--next pagination__link--disabled" aria-disabled="true">
+                <span class="material-symbols-rounded">chevron_right</span>
+              </span>
+            </li>
+            {% endif %}
+          </ul>
+        </nav>
+        {% endif %}
+        
+        <!-- Results Footer -->
+        <div class="products-footer">
+          <p class="products-footer__text">
+            {% if paginator.num_pages > 1 %}
+            Page {{ page_obj.number }} of {{ paginator.num_pages }}
+            {% else %}
+            Showing all {{ total_products }} product{{ total_products|pluralize }}
+            {% endif %}
+          </p>
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="products-empty" role="status">
+          <div class="products-empty__icon">
+            <span class="material-symbols-rounded">inventory_2</span>
+          </div>
+          <h2 class="products-empty__title">No Products Found</h2>
+          <p class="products-empty__text">{% if search_query %}No products match your search "{{ search_query }}".{% else %}No products available in this category yet.{% endif %}</p>
+          <a href="/products/" class="btn btn-primary">
+            <span class="material-symbols-rounded">arrow_back</span>
+            View All Products
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Bulk Pricing Modal -->
+<div class="bulk-pricing-modal" id="bulkPricingModal" role="dialog" aria-modal="true" aria-labelledby="bulkPricingTitle" aria-hidden="true">
+  <div class="bulk-pricing-modal__backdrop" onclick="closeBulkPricingModal()"></div>
+  <div class="bulk-pricing-modal__container">
+    <div class="bulk-pricing-modal__content">
+      <!-- Modal Header -->
+      <div class="bulk-pricing-modal__header">
+        <div class="bulk-pricing-modal__product-info">
+          <img src="" alt="" class="bulk-pricing-modal__image" id="modalProductImage">
+          <div class="bulk-pricing-modal__title-wrapper">
+            <span class="bulk-pricing-modal__badge">
+              <span class="material-symbols-rounded">trending_down</span>
+              Volume Discounts
+            </span>
+            <h2 class="bulk-pricing-modal__title" id="bulkPricingTitle">Product Name</h2>
+          </div>
+        </div>
+        <button type="button" class="bulk-pricing-modal__close" onclick="closeBulkPricingModal()" aria-label="Close bulk pricing">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      
+      <!-- Modal Body -->
+      <div class="bulk-pricing-modal__body">
+        <!-- Retail Price Highlight -->
+        <div class="bulk-pricing-modal__retail">
+          <span class="bulk-pricing-modal__retail-label">Retail Price</span>
+          <span class="bulk-pricing-modal__retail-price" id="modalRetailPrice">$0.00</span>
+          <span class="bulk-pricing-modal__retail-unit">/unit</span>
+        </div>
+        
+        <!-- Pricing Tiers -->
+        <div class="bulk-pricing-modal__tiers" id="bulkPricingTiers">
+          <!-- Tiers will be dynamically inserted here -->
+        </div>
+        
+        <!-- Info Footer -->
+        <div class="bulk-pricing-modal__info">
+          <span class="material-symbols-rounded">info</span>
+          <p>Prices shown are per unit. Larger quantities unlock better savings!</p>
+        </div>
+      </div>
+      
+      <!-- Modal Footer -->
+      <div class="bulk-pricing-modal__footer">
+        <button type="button" class="btn btn-outline" onclick="closeBulkPricingModal()">Close</button>
+        <a href="#" class="btn btn-primary" id="modalViewProduct">
+          <span class="material-symbols-rounded">open_in_new</span>
+          View Product
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Pricing Modal -->
+<div class="bulk-pricing-modal" id="bulkPricingModal" role="dialog" aria-modal="true" aria-labelledby="bulkPricingTitle" aria-hidden="true">
+  <div class="bulk-pricing-modal__backdrop" onclick="closeBulkPricingModal()"></div>
+  <div class="bulk-pricing-modal__container">
+    <div class="bulk-pricing-modal__content">
+      <!-- Modal Header -->
+      <div class="bulk-pricing-modal__header">
+        <div class="bulk-pricing-modal__product-info">
+          <img src="" alt="" class="bulk-pricing-modal__image" id="modalProductImage">
+          <div class="bulk-pricing-modal__title-wrapper">
+            <span class="bulk-pricing-modal__badge">
+              <span class="material-symbols-rounded">trending_down</span>
+              Volume Discounts
+            </span>
+            <h2 class="bulk-pricing-modal__title" id="bulkPricingTitle">Product Name</h2>
+          </div>
+        </div>
+        <button type="button" class="bulk-pricing-modal__close" onclick="closeBulkPricingModal()" aria-label="Close bulk pricing">
+          <span class="material-symbols-rounded">close</span>
+        </button>
+      </div>
+      
+      <!-- Modal Body -->
+      <div class="bulk-pricing-modal__body">
+        <!-- Retail Price Highlight -->
+        <div class="bulk-pricing-modal__retail">
+          <span class="bulk-pricing-modal__retail-label">Retail Price</span>
+          <span class="bulk-pricing-modal__retail-price" id="modalRetailPrice">$0.00</span>
+          <span class="bulk-pricing-modal__retail-unit">/unit</span>
+        </div>
+        
+        <!-- Pricing Tiers -->
+        <div class="bulk-pricing-modal__tiers" id="bulkPricingTiers">
+          <!-- Tiers will be dynamically inserted here -->
+        </div>
+        
+        <!-- Info Footer -->
+        <div class="bulk-pricing-modal__info">
+          <span class="material-symbols-rounded">info</span>
+          <p>Prices shown are per unit. Larger quantities unlock better savings!</p>
+        </div>
+      </div>
+      
+      <!-- Modal Footer -->
+      <div class="bulk-pricing-modal__footer">
+        <button type="button" class="btn btn-outline" onclick="closeBulkPricingModal()">Close</button>
+        <a href="#" class="btn btn-primary" id="modalViewProduct">
+          <span class="material-symbols-rounded">open_in_new</span>
+          View Product
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Product Search Script Data -->
+<script>
+  window.PRODUCT_SEARCH_CONFIG = {
+    searchAjaxUrl: '/products/search/',
+    autocompleteUrl: '/api/products/autocomplete/',
+    currentFilters: {
+      search: '{{ search_query|escapejs }}',
+      category: '{{ selected_category|escapejs }}',
+      sort: '{{ sort_option|escapejs }}',
+      page: {{ page_obj.number|default:1 }}
+    }
+  };
+
+  // Toggle category expand/collapse
+  function toggleCategoryExpand(button) {
+    const parentItem = button.closest('.filter-item--parent');
+    if (parentItem) {
+      parentItem.classList.toggle('filter-item--expanded');
+      const isExpanded = parentItem.classList.contains('filter-item--expanded');
+      parentItem.setAttribute('aria-expanded', isExpanded);
+    }
+  }
+
+  // Initialize: expand categories that have active subcategories or are selected
+  document.addEventListener('DOMContentLoaded', function() {
+    // Already handled via server-side class assignment (filter-item--expanded)
+    // But also allow clicking on parent category name to expand if it has children
+    const parentLinks = document.querySelectorAll('.filter-item--parent > .filter-item__header > .filter-link');
+    
+    parentLinks.forEach(link => {
+      // If parent has subcategories and is clicked, expand it
+      const parentItem = link.closest('.filter-item--parent');
+      const hasSubcategories = parentItem.querySelector('.filter-sublist');
+      
+      if (hasSubcategories) {
+        // Add visual indicator that it's expandable
+        link.style.cursor = 'pointer';
+      }
+    });
+  });
+
+  // ===========================
+  // Bulk Pricing Modal Functions
+  // ===========================
+  
+  function openBulkPricingModal(event, button) {
+    // Prevent click from bubbling to parent link
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const modal = document.getElementById('bulkPricingModal');
+    const productName = button.dataset.productName;
+    const productImage = button.dataset.productImage;
+    const retailPrice = parseFloat(button.dataset.retailPrice);
+    const pricingTiers = JSON.parse(button.dataset.pricingTiers);
+    
+    // Set product info
+    document.getElementById('bulkPricingTitle').textContent = productName;
+    document.getElementById('modalRetailPrice').textContent = '$' + retailPrice.toFixed(2);
+    
+    // Set product image
+    const imgEl = document.getElementById('modalProductImage');
+    if (productImage) {
+      imgEl.src = productImage;
+      imgEl.alt = productName;
+      imgEl.style.display = 'block';
+    } else {
+      imgEl.style.display = 'none';
+    }
+    
+    // Set view product link
+    const productCard = button.closest('.product-card-v2');
+    const productLink = productCard.querySelector('.product-card-v2__link').href;
+    document.getElementById('modalViewProduct').href = productLink;
+    
+    // Generate pricing tiers
+    const tiersContainer = document.getElementById('bulkPricingTiers');
+    tiersContainer.innerHTML = '';
+    
+    pricingTiers.forEach((tier, index) => {
+      const tierPrice = parseFloat(tier.price);
+      const savings = ((retailPrice - tierPrice) / retailPrice * 100).toFixed(0);
+      const isLastTier = index === pricingTiers.length - 1;
+      
+      const tierHTML = `
+        <div class="bulk-pricing-tier ${isLastTier ? 'bulk-pricing-tier--best' : ''}" style="animation-delay: ${index * 0.1}s">
+          <div class="bulk-pricing-tier__header">
+            <span class="bulk-pricing-tier__qty">
+              <span class="material-symbols-rounded">inventory_2</span>
+              ${tier.min}${tier.max ? ' - ' + tier.max : '+'} units
+            </span>
+            ${savings > 0 ? `<span class="bulk-pricing-tier__savings">Save ${savings}%</span>` : ''}
+          </div>
+          <div class="bulk-pricing-tier__price">
+            <span class="bulk-pricing-tier__amount">$${tierPrice.toFixed(2)}</span>
+            <span class="bulk-pricing-tier__unit">/unit</span>
+          </div>
+          ${isLastTier ? '<span class="bulk-pricing-tier__badge">Best Value</span>' : ''}
+        </div>
+      `;
+      tiersContainer.innerHTML += tierHTML;
+    });
+    
+    // Show modal with animation
+    modal.classList.add('bulk-pricing-modal--active');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    
+    // Focus trap
+    setTimeout(() => {
+      modal.querySelector('.bulk-pricing-modal__close').focus();
+    }, 100);
+  }
+  
+  function closeBulkPricingModal() {
+    const modal = document.getElementById('bulkPricingModal');
+    modal.classList.remove('bulk-pricing-modal--active');
+    modal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+  
+  // Close on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      const modal = document.getElementById('bulkPricingModal');
+      if (modal && modal.classList.contains('bulk-pricing-modal--active')) {
+        closeBulkPricingModal();
+      }
+    }
+  });
+</script>
+{% endblock %}

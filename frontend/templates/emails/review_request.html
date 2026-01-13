@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>How Was Your Experience?</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #fafaf2; }
+        .container { max-width: 600px; margin: 20px auto; background: white; padding: 30px; border-radius: 8px; }
+        .header { text-align: center; padding-bottom: 20px; border-bottom: 2px solid #4a7c59; }
+        .logo { font-size: 24px; font-weight: bold; color: #292808; }
+        .content { padding: 20px 0; text-align: center; }
+        .rating-box { background: #d2ff99; padding: 30px; border-radius: 5px; margin: 20px 0; }
+        .stars { font-size: 40px; letter-spacing: 10px; margin: 20px 0; }
+        .star-link { text-decoration: none; display: inline-block; margin: 0 5px; transition: transform 0.2s; }
+        .star-link:hover { transform: scale(1.2); }
+        .button { display: inline-block; padding: 15px 40px; background: #4a7c59; color: white; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; margin: 20px 0; }
+        .product-box { background: #fafaf2; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .footer { text-align: center; padding-top: 20px; border-top: 1px solid #e8dcc8; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">⭐ Packaxis Packaging Canada</div>
+        </div>
+        
+        <div class="content">
+            <h2 style="color: #4a7c59;">How Was Your Experience?</h2>
+            
+            <p>Hi {{ order.customer.first_name|default:"Valued Customer" }},</p>
+            
+            <p>We hope you're loving your recent purchase! Your feedback helps us continue to provide the best eco-friendly packaging solutions.</p>
+            
+            <div class="product-box">
+                <strong style="color: #292808;">Your Recent Order</strong><br>
+                <span style="color: #666; font-size: 14px;">Order #{{ order.order_number }}</span>
+                <div style="margin-top: 10px;">
+                    {% for line in order.lines.all %}
+                    <p style="margin: 5px 0;">{{ line.product.name }} x{{ line.quantity }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="rating-box">
+                <p style="margin: 0 0 10px 0; font-size: 18px; color: #292808; font-weight: bold;">Rate Your Experience</p>
+                <div class="stars">
+                    <a href="{{ review_url }}?rating=5" class="star-link">⭐</a>
+                    <a href="{{ review_url }}?rating=4" class="star-link">⭐</a>
+                    <a href="{{ review_url }}?rating=3" class="star-link">⭐</a>
+                    <a href="{{ review_url }}?rating=2" class="star-link">⭐</a>
+                    <a href="{{ review_url }}?rating=1" class="star-link">⭐</a>
+                </div>
+                <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">Click a star to leave your review</p>
+            </div>
+            
+            <p>
+                <a href="{{ review_url }}" class="button">Write a Review</a>
+            </p>
+            
+            <p style="font-size: 14px; color: #666; margin-top: 30px;">
+                Your review will help other businesses discover sustainable packaging solutions. We truly appreciate your time!
+            </p>
+            
+            <p style="font-size: 12px; color: #666; margin-top: 20px; font-style: italic;">
+                As a thank you, we'll send you a special discount code for your next order once you submit your review! 🎁
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>Packaxis Packaging Canada<br>
+            135 Eighth St, Toronto, ON M8V 3C8<br>
+            Phone: +1 844 844 4200</p>
+            <p style="margin-top: 10px;">
+                <a href="mailto:orders@packaxis.ca" style="color: #4a7c59;">Contact Us</a> | 
+                <a href="https://packaxis.ca" style="color: #4a7c59;">Visit Our Website</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

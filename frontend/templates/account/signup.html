@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}Create Account - PackAxis{% endblock %}
+
+{% block extra_head %}
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+  <div class="auth-container">
+    <!-- Left Panel - Branding -->
+    <div class="auth-branding">
+      <div class="auth-branding__content">
+        <a href="{% url 'home' %}" class="auth-branding__logo" aria-label="PackAxis Home">
+          <span class="material-symbols-rounded">inventory_2</span>
+        </a>
+        <h1 class="auth-branding__title">Join the PackAxis Family</h1>
+        <p class="auth-branding__text">Create your account today and discover premium packaging solutions tailored for your business needs.</p>
+        
+        <div class="auth-features">
+          <div class="auth-feature">
+            <div class="auth-feature__icon">
+              <span class="material-symbols-rounded">check_circle</span>
+            </div>
+            <span>Free account creation</span>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature__icon">
+              <span class="material-symbols-rounded">local_offer</span>
+            </div>
+            <span>Bulk order discounts</span>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature__icon">
+              <span class="material-symbols-rounded">headset_mic</span>
+            </div>
+            <span>Priority customer support</span>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature__icon">
+              <span class="material-symbols-rounded">new_releases</span>
+            </div>
+            <span>Early access to new products</span>
+          </div>
+        </div>
+
+        <div class="auth-trust">
+          <div class="auth-trust__item">
+            <span class="material-symbols-rounded">verified_user</span>
+            <span>Secure & Encrypted</span>
+          </div>
+          <div class="auth-trust__item">
+            <span class="material-symbols-rounded">thumb_up</span>
+            <span>No Spam Ever</span>
+          </div>
+        </div>
+      </div>
+      <div class="auth-branding__pattern"></div>
+    </div>
+
+    <!-- Right Panel - Form -->
+    <div class="auth-form-panel">
+      <div class="auth-card">
+        <div class="auth-card__header">
+          <div class="auth-card__badge auth-card__badge--accent">
+            <span class="material-symbols-rounded">person_add</span>
+            <span>New Member</span>
+          </div>
+          <h2 class="auth-card__title">Create your account</h2>
+          <p class="auth-card__subtitle">Fill in your details to get started</p>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="auth-alert auth-alert--error" role="alert">
+          <span class="material-symbols-rounded">error</span>
+          <span>{{ form.non_field_errors|join:", " }}</span>
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'account_signup' %}" class="auth-form" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ redirect_field_value|default:'/' }}" />
+
+          <div class="auth-form__row">
+            <div class="auth-field">
+              <label for="id_first_name" class="auth-field__label">First Name</label>
+              <div class="auth-field__input-wrap {% if form.first_name.errors %}auth-field__input-wrap--error{% endif %}">
+                <span class="material-symbols-rounded auth-field__icon">person</span>
+                <input 
+                  type="text" 
+                  name="first_name" 
+                  id="id_first_name" 
+                  value="{{ form.first_name.value|default:'' }}" 
+                  placeholder="John" 
+                  class="auth-field__input"
+                >
+              </div>
+              {% if form.first_name.errors %}
+              <p class="auth-field__error">
+                <span class="material-symbols-rounded">error</span>
+                {{ form.first_name.errors|join:", " }}
+              </p>
+              {% endif %}
+            </div>
+            <div class="auth-field">
+              <label for="id_last_name" class="auth-field__label">Last Name</label>
+              <div class="auth-field__input-wrap {% if form.last_name.errors %}auth-field__input-wrap--error{% endif %}">
+                <span class="material-symbols-rounded auth-field__icon">person</span>
+                <input 
+                  type="text" 
+                  name="last_name" 
+                  id="id_last_name" 
+                  value="{{ form.last_name.value|default:'' }}" 
+                  placeholder="Doe" 
+                  class="auth-field__input"
+                >
+              </div>
+              {% if form.last_name.errors %}
+              <p class="auth-field__error">
+                <span class="material-symbols-rounded">error</span>
+                {{ form.last_name.errors|join:", " }}
+              </p>
+              {% endif %}
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label for="id_email" class="auth-field__label">Email Address</label>
+            <div class="auth-field__input-wrap {% if form.email.errors %}auth-field__input-wrap--error{% endif %}">
+              <span class="material-symbols-rounded auth-field__icon">mail</span>
+              <input 
+                type="email" 
+                name="email" 
+                id="id_email" 
+                required 
+                autocomplete="email" 
+                value="{{ form.email.value|default:'' }}" 
+                placeholder="you@example.com" 
+                class="auth-field__input"
+              >
+            </div>
+            {% if form.email.errors %}
+            <p class="auth-field__error">
+              <span class="material-symbols-rounded">error</span>
+              {{ form.email.errors|join:", " }}
+            </p>
+            {% endif %}
+          </div>
+
+          <div class="auth-field">
+            <label for="id_password1" class="auth-field__label">Password</label>
+            <div class="auth-field__input-wrap {% if form.password1.errors %}auth-field__input-wrap--error{% endif %}">
+              <span class="material-symbols-rounded auth-field__icon">lock</span>
+              <input 
+                type="password" 
+                name="password1" 
+                id="id_password1" 
+                required 
+                autocomplete="new-password" 
+                placeholder="Create a strong password" 
+                class="auth-field__input"
+              >
+              <button type="button" class="auth-field__toggle" aria-label="Toggle password visibility" data-toggle-password>
+                <span class="material-symbols-rounded">visibility</span>
+              </button>
+            </div>
+            {% if form.password1.errors %}
+            <p class="auth-field__error">
+              <span class="material-symbols-rounded">error</span>
+              {{ form.password1.errors|join:", " }}
+            </p>
+            {% endif %}
+            <div class="auth-field__hint">
+              <span class="material-symbols-rounded">info</span>
+              <span>At least 8 characters with letters and numbers</span>
+            </div>
+          </div>
+
+          <div class="auth-field">
+            <label for="id_password2" class="auth-field__label">Confirm Password</label>
+            <div class="auth-field__input-wrap {% if form.password2.errors %}auth-field__input-wrap--error{% endif %}">
+              <span class="material-symbols-rounded auth-field__icon">lock</span>
+              <input 
+                type="password" 
+                name="password2" 
+                id="id_password2" 
+                required 
+                autocomplete="new-password" 
+                placeholder="Confirm your password" 
+                class="auth-field__input"
+              >
+              <button type="button" class="auth-field__toggle" aria-label="Toggle password visibility" data-toggle-password>
+                <span class="material-symbols-rounded">visibility</span>
+              </button>
+            </div>
+            {% if form.password2.errors %}
+            <p class="auth-field__error">
+              <span class="material-symbols-rounded">error</span>
+              {{ form.password2.errors|join:", " }}
+            </p>
+            {% endif %}
+          </div>
+
+          <div class="auth-terms">
+            <label class="auth-checkbox">
+              <input type="checkbox" name="terms" id="id_terms" required>
+              <span class="auth-checkbox__mark"></span>
+              <span class="auth-checkbox__label">
+                I agree to the <a href="/content/terms/" class="auth-link">Terms of Service</a> and <a href="/content/privacy/" class="auth-link">Privacy Policy</a>
+              </span>
+            </label>
+          </div>
+
+          <button type="submit" class="auth-btn auth-btn--primary">
+            <span>Create Account</span>
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </button>
+        </form>
+
+        <div class="auth-divider">
+          <span>Already a member?</span>
+        </div>
+
+        <div class="auth-footer">
+          <p class="auth-footer__text">Already have an account?</p>
+          <a href="{% url 'account_login' %}" class="auth-btn auth-btn--outline">
+            <span class="material-symbols-rounded">login</span>
+            <span>Sign In</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  'use strict';
+  
+  // Password visibility toggle
+  document.querySelectorAll('[data-toggle-password]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const input = this.closest('.auth-field__input-wrap').querySelector('input');
+      const icon = this.querySelector('.material-symbols-rounded');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        input.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    });
+  });
+
+  // Real-time password strength indicator
+  const password1 = document.getElementById('id_password1');
+  const password2 = document.getElementById('id_password2');
+  
+  if (password1) {
+    password1.addEventListener('input', function() {
+      const value = this.value;
+      const wrap = this.closest('.auth-field__input-wrap');
+      
+      // Reset classes
+      wrap.classList.remove('auth-field__input-wrap--weak', 'auth-field__input-wrap--medium', 'auth-field__input-wrap--strong');
+      
+      if (value.length === 0) return;
+      
+      // Calculate strength
+      let strength = 0;
+      if (value.length >= 8) strength++;
+      if (/[A-Z]/.test(value)) strength++;
+      if (/[a-z]/.test(value)) strength++;
+      if (/[0-9]/.test(value)) strength++;
+      if (/[^A-Za-z0-9]/.test(value)) strength++;
+      
+      if (strength <= 2) {
+        wrap.classList.add('auth-field__input-wrap--weak');
+      } else if (strength <= 3) {
+        wrap.classList.add('auth-field__input-wrap--medium');
+      } else {
+        wrap.classList.add('auth-field__input-wrap--strong');
+      }
+    });
+  }
+
+  // Password match check
+  if (password2 && password1) {
+    password2.addEventListener('input', function() {
+      const wrap = this.closest('.auth-field__input-wrap');
+      wrap.classList.remove('auth-field__input-wrap--match', 'auth-field__input-wrap--mismatch');
+      
+      if (this.value.length === 0) return;
+      
+      if (this.value === password1.value) {
+        wrap.classList.add('auth-field__input-wrap--match');
+      } else {
+        wrap.classList.add('auth-field__input-wrap--mismatch');
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,1546 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+''
+{% block title %}Help Center - Packaxis Packaging Support & Resources{% endblock %}
+
+{% block extra_head %}
+<!-- Performance: Preload critical resources -->
+<link rel="preload" href="{% static 'js/help-center.js' %}" as="script">
+<link rel="dns-prefetch" href="https://fonts.googleapis.com">
+
+<!-- SEO Meta Tags -->
+<meta name="description" content="Get help with Packaxis packaging orders, shipping, custom printing, returns, and more. Browse our comprehensive help center with {{ total_articles }} articles across {{ total_categories }} categories.">
+<meta name="keywords" content="packaxis help, packaging support, order help, shipping help, custom printing guide, wholesale packaging, paper bags FAQ">
+<link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+<!-- Open Graph -->
+<meta property="og:title" content="Help Center - Packaxis Packaging Support">
+<meta property="og:description" content="Find answers to your questions about packaging orders, shipping, custom printing, and more.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+
+<!-- Schema.org WebPage -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Packaxis Help Center",
+  "description": "Comprehensive help center for Packaxis packaging products and services",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Packaxis",
+    "url": "https://packaxis.ca"
+  },
+  "mainEntity": {
+    "@type": "ItemList",
+    "itemListElement": [
+      {% for category in categories %}
+      {
+        "@type": "ListItem",
+        "position": {{ forloop.counter }},
+        "name": "{{ category.name }}",
+        "url": "{{ request.scheme }}://{{ request.get_host }}{{ category.get_absolute_url }}"
+      }{% if not forloop.last %},{% endif %}
+      {% endfor %}
+    ]
+  }
+}
+</script>
+
+<style>
+/* Premium Help Center Styles */
+.hc-premium-hero {
+  position: relative;
+  padding: var(--space-20) 0 var(--space-16);
+  background: linear-gradient(135deg, var(--bg-primary) 0%, color-mix(in srgb, var(--primary) 8%, var(--bg-primary)) 50%, var(--bg-primary) 100%);
+  overflow: hidden;
+}
+
+.hc-premium-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(circle at 20% 80%, color-mix(in srgb, var(--primary) 15%, transparent) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%230D7B7F' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+.hc-premium-hero__glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--primary) 20%, transparent) 0%, transparent 70%);
+  filter: blur(80px);
+  top: -200px;
+  right: -100px;
+  animation: floatGlow 8s ease-in-out infinite;
+}
+
+@keyframes floatGlow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(-30px, 30px) scale(1.1); }
+}
+
+.hc-premium-hero__content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hc-premium-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 80%, var(--accent)));
+  border-radius: var(--radius-full);
+  color: #fff;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-6);
+  box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--primary) 50%, transparent);
+  animation: badgePulse 3s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 4px 20px -4px color-mix(in srgb, var(--primary) 50%, transparent); }
+  50% { box-shadow: 0 4px 30px -2px color-mix(in srgb, var(--primary) 70%, transparent); }
+}
+
+.hc-premium-hero__badge .material-symbols-rounded {
+  font-size: 18px;
+}
+
+.hc-premium-hero__title {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--text-primary);
+  margin-bottom: var(--space-4);
+  letter-spacing: -0.02em;
+}
+
+.hc-premium-hero__title .text-gradient {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hc-premium-hero__subtitle {
+  font-size: var(--text-lg);
+  color: var(--text-secondary);
+  max-width: 600px;
+  margin: 0 auto var(--space-10);
+  line-height: 1.6;
+}
+
+/* Premium Search Component */
+.hc-premium-search {
+  position: relative;
+  max-width: 700px;
+  margin: 0 auto var(--space-8);
+}
+
+.hc-premium-search__wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  border: 2px solid var(--border-light);
+  padding: var(--space-2);
+  box-shadow: 
+    0 4px 6px -1px rgba(0, 0, 0, 0.05),
+    0 20px 40px -15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hc-premium-search__wrapper:focus-within {
+  border-color: var(--primary);
+  box-shadow: 
+    0 0 0 4px color-mix(in srgb, var(--primary) 15%, transparent),
+    0 20px 50px -15px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+.hc-premium-search__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: color 0.3s ease;
+}
+
+.hc-premium-search__wrapper:focus-within .hc-premium-search__icon {
+  color: var(--primary);
+}
+
+.hc-premium-search__icon .material-symbols-rounded {
+  font-size: 24px;
+}
+
+.hc-premium-search__input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: var(--space-3) var(--space-2);
+  font-size: var(--text-lg);
+  color: var(--text-primary);
+  outline: none;
+  min-width: 0;
+}
+
+.hc-premium-search__input::placeholder {
+  color: var(--text-muted);
+}
+
+.hc-premium-search__clear {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  cursor: pointer;
+  margin-right: var(--space-2);
+  transition: all 0.2s ease;
+}
+
+.hc-premium-search__clear.visible {
+  display: flex;
+}
+
+.hc-premium-search__clear:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.hc-premium-search__btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-6);
+  background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 85%, var(--accent)));
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-xl);
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px -3px color-mix(in srgb, var(--primary) 50%, transparent);
+}
+
+.hc-premium-search__btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 6px 20px -3px color-mix(in srgb, var(--primary) 60%, transparent);
+}
+
+.hc-premium-search__btn .material-symbols-rounded {
+  font-size: 20px;
+  transition: transform 0.3s ease;
+}
+
+.hc-premium-search__btn:hover .material-symbols-rounded {
+  transform: translateX(3px);
+}
+
+/* Search Shortcuts */
+.hc-premium-search__shortcuts {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.hc-premium-search__shortcut {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1-5) var(--space-3);
+  background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-size: var(--text-xs);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+}
+
+.hc-premium-search__shortcut:hover {
+  background: var(--bg-primary);
+  border-color: var(--primary);
+  color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.hc-premium-search__shortcut kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+/* Live Search Results Dropdown */
+.hc-live-results {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-radius: var(--radius-xl);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  max-height: 480px;
+  overflow: hidden;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px) scale(0.98);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+}
+
+.hc-live-results.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0) scale(1);
+}
+
+.hc-live-results__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.hc-live-results__title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #111827;
+}
+
+.hc-live-results__count {
+  font-size: var(--text-xs);
+  color: #6b7280;
+  padding: var(--space-1) var(--space-2);
+  background: #e5e7eb;
+  border-radius: var(--radius-full);
+}
+
+.hc-live-results__list {
+  max-height: 360px;
+  overflow-y: auto;
+  padding: var(--space-2);
+}
+
+.hc-live-results__item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  transition: all 0.15s ease;
+  animation: fadeInUp 0.3s ease forwards;
+  opacity: 0;
+}
+
+.hc-live-results__item:hover,
+.hc-live-results__item.active {
+  background: #f3f4f6;
+}
+
+.hc-live-results__item:nth-child(1) { animation-delay: 0ms; }
+.hc-live-results__item:nth-child(2) { animation-delay: 30ms; }
+.hc-live-results__item:nth-child(3) { animation-delay: 60ms; }
+.hc-live-results__item:nth-child(4) { animation-delay: 90ms; }
+.hc-live-results__item:nth-child(5) { animation-delay: 120ms; }
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hc-live-results__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: color-mix(in srgb, var(--category-color, var(--primary)) 12%, transparent);
+  border-radius: var(--radius-lg);
+  color: var(--category-color, var(--primary));
+  flex-shrink: 0;
+}
+
+.hc-live-results__icon .material-symbols-rounded {
+  font-size: 20px;
+}
+
+.hc-live-results__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.hc-live-results__category {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--category-color, var(--primary));
+  font-weight: 500;
+  margin-bottom: var(--space-1);
+}
+
+.hc-live-results__name {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: var(--space-1);
+  line-height: 1.4;
+}
+
+.hc-live-results__name mark {
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.hc-live-results__excerpt {
+  font-size: var(--text-xs);
+  color: #6b7280;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.hc-live-results__excerpt mark {
+  background: color-mix(in srgb, var(--accent) 25%, transparent);
+  color: inherit;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+.hc-live-results__arrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.hc-live-results__item:hover .hc-live-results__arrow {
+  transform: translateX(4px);
+  color: var(--primary);
+}
+
+.hc-live-results__footer {
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.hc-live-results__view-all {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2-5);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: var(--radius-lg);
+  color: #0D7B7F;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.hc-live-results__view-all:hover {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+/* Loading State */
+.hc-live-results__loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-10);
+  gap: var(--space-3);
+}
+
+.hc-loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border-light);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.hc-live-results__loading-text {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* Empty State */
+.hc-live-results__empty {
+  text-align: center;
+  padding: var(--space-10) var(--space-6);
+}
+
+.hc-live-results__empty-icon {
+  font-size: 48px;
+  color: var(--text-muted);
+  opacity: 0.5;
+  margin-bottom: var(--space-3);
+}
+
+.hc-live-results__empty-title {
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.hc-live-results__empty-text {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+}
+
+/* Stats Section */
+.hc-premium-stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-8);
+  flex-wrap: wrap;
+  padding-top: var(--space-6);
+  border-top: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
+  margin-top: var(--space-6);
+}
+
+.hc-premium-stat {
+  text-align: center;
+  padding: var(--space-4);
+}
+
+.hc-premium-stat__value {
+  display: block;
+  font-size: var(--text-3xl);
+  font-weight: 800;
+  color: var(--primary);
+  line-height: 1;
+  margin-bottom: var(--space-1);
+}
+
+.hc-premium-stat__label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Search Results Grid (for displaying articles) */
+#hc-results-grid {
+  display: none;
+}
+
+#hc-results-grid.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.hc-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.hc-results-header__left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.hc-results-header__title {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.hc-results-header__count {
+  padding: var(--space-1) var(--space-3);
+  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.hc-results-header__clear {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-4);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.hc-results-header__clear:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.hc-results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--space-5);
+}
+
+/* Loading Overlay */
+.hc-loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.hc-loading-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.hc-loading-overlay__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-8);
+  background: var(--bg-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.hc-loading-overlay__spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--border-light);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.hc-loading-overlay__text {
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .hc-premium-hero {
+    padding: var(--space-12) 0;
+  }
+  
+  .hc-premium-search__wrapper {
+    flex-wrap: wrap;
+    padding: var(--space-3);
+    gap: var(--space-2);
+  }
+  
+  .hc-premium-search__input {
+    flex: 1 1 100%;
+    padding: var(--space-3);
+    font-size: var(--text-base);
+    text-align: center;
+  }
+  
+  .hc-premium-search__icon {
+    display: none;
+  }
+  
+  .hc-premium-search__btn {
+    flex: 1;
+    justify-content: center;
+  }
+  
+  .hc-premium-search__shortcuts {
+    justify-content: center;
+  }
+  
+  .hc-premium-stats {
+    gap: var(--space-4);
+  }
+  
+  .hc-premium-stat {
+    flex: 1 1 80px;
+    padding: var(--space-3);
+  }
+  
+  .hc-premium-stat__value {
+    font-size: var(--text-2xl);
+  }
+  
+  .hc-live-results {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-height: 70vh;
+    border-radius: var(--radius-2xl) var(--radius-2xl) 0 0;
+    transform: translateY(100%);
+  }
+  
+  .hc-live-results.active {
+    transform: translateY(0);
+  }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Loading Overlay -->
+<div id="hc-loading-overlay" class="hc-loading-overlay">
+  <div class="hc-loading-overlay__content">
+    <div class="hc-loading-overlay__spinner"></div>
+    <span class="hc-loading-overlay__text">Searching articles...</span>
+  </div>
+</div>
+
+<!-- Breadcrumb Navigation -->
+<nav class="breadcrumb-nav" aria-label="Breadcrumb">
+  <div class="container">
+    <ol class="breadcrumb-list">
+      <li class="breadcrumb-item">
+        <a href="{% url 'home' %}" class="breadcrumb-link">Home</a>
+      </li>
+      <li class="breadcrumb-separator" aria-hidden="true">
+        <span class="material-symbols-rounded">chevron_right</span>
+      </li>
+      <li class="breadcrumb-item breadcrumb-item--current">
+        <span aria-current="page">Help Center</span>
+      </li>
+    </ol>
+  </div>
+</nav>
+
+<!-- Premium Help Center Hero -->
+<section class="hc-premium-hero">
+  <div class="hc-premium-hero__glow"></div>
+  <div class="container">
+    <div class="hc-premium-hero__content">
+      <span class="hc-premium-hero__badge">
+        <span class="material-symbols-rounded">support_agent</span>
+        Knowledge Base
+      </span>
+      <h1 class="hc-premium-hero__title">How Can We <span class="text-gradient">Help You</span> Today?</h1>
+      <p class="hc-premium-hero__subtitle">Search our comprehensive knowledge base with {{ total_articles }}+ articles to find instant answers to your questions</p>
+      
+      <!-- Premium Search Component -->
+      <div class="hc-premium-search" id="hc-search-container">
+        <div class="hc-premium-search__wrapper">
+          <span class="hc-premium-search__icon">
+            <span class="material-symbols-rounded">search</span>
+          </span>
+          <input 
+            type="text" 
+            id="hc-search-input"
+            class="hc-premium-search__input" 
+            placeholder="Search for articles, topics, or keywords..."
+            autocomplete="off"
+            aria-label="Search help articles"
+            data-search-url="{% url 'content:help_search' %}"
+          >
+          <button type="button" id="hc-search-clear" class="hc-premium-search__clear" aria-label="Clear search">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+          <button type="button" id="hc-search-btn" class="hc-premium-search__btn">
+            <span>Search</span>
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </button>
+        </div>
+        
+        <!-- Live Search Results -->
+        <div id="hc-live-results" class="hc-live-results" role="listbox" aria-label="Search results">
+          <!-- Results populated by JS -->
+        </div>
+        
+        <!-- Search Shortcuts -->
+        <div class="hc-premium-search__shortcuts">
+          <span class="hc-premium-search__shortcut" data-search="shipping">
+            <span class="material-symbols-rounded" style="font-size: 14px;">local_shipping</span>
+            Shipping
+          </span>
+          <span class="hc-premium-search__shortcut" data-search="custom printing">
+            <span class="material-symbols-rounded" style="font-size: 14px;">palette</span>
+            Custom Printing
+          </span>
+          <span class="hc-premium-search__shortcut" data-search="returns">
+            <span class="material-symbols-rounded" style="font-size: 14px;">swap_horiz</span>
+            Returns
+          </span>
+          <span class="hc-premium-search__shortcut" data-search="pricing">
+            <span class="material-symbols-rounded" style="font-size: 14px;">payments</span>
+            Pricing
+          </span>
+          <span class="hc-premium-search__shortcut">
+            <kbd>Enter</kbd> Search
+          </span>
+          <span class="hc-premium-search__shortcut">
+            <kbd>Esc</kbd> Clear
+          </span>
+        </div>
+      </div>
+      
+      <!-- Stats -->
+      <div class="hc-premium-stats">
+        <div class="hc-premium-stat">
+          <span class="hc-premium-stat__value">{{ total_articles }}</span>
+          <span class="hc-premium-stat__label">Help Articles</span>
+        </div>
+        <div class="hc-premium-stat">
+          <span class="hc-premium-stat__value">{{ total_categories }}</span>
+          <span class="hc-premium-stat__label">Categories</span>
+        </div>
+        <div class="hc-premium-stat">
+          <span class="hc-premium-stat__value">24/7</span>
+          <span class="hc-premium-stat__label">Online Support</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Search Results Section (hidden by default) -->
+<section id="hc-results-grid" class="section">
+  <div class="container">
+    <div class="hc-results-header">
+      <div class="hc-results-header__left">
+        <h2 class="hc-results-header__title">Search Results</h2>
+        <span id="hc-results-count" class="hc-results-header__count">0 articles</span>
+      </div>
+      <button type="button" id="hc-clear-results" class="hc-results-header__clear">
+        <span class="material-symbols-rounded">close</span>
+        <span>Clear Search</span>
+      </button>
+    </div>
+    <div id="hc-articles-grid" class="hc-results-grid">
+      <!-- Results populated by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- Default Content (Categories, Featured, etc.) -->
+<div id="hc-default-content">
+  <!-- Categories Grid -->
+  <section class="hc-categories">
+    <div class="container">
+      <div class="hc-section-header">
+        <h2 class="hc-section-title">Browse by Category</h2>
+        <p class="hc-section-subtitle">Find articles organized by topic to quickly get the help you need</p>
+      </div>
+      
+      <div class="hc-categories__grid">
+        {% for category in categories %}
+        <a href="{{ category.get_absolute_url }}" class="hc-category-card" style="--category-color: {{ category.color }}">
+          <div class="hc-category-card__icon">
+            <span class="material-symbols-rounded">{{ category.icon }}</span>
+          </div>
+          <div class="hc-category-card__content">
+            <h3 class="hc-category-card__title">{{ category.name }}</h3>
+            <p class="hc-category-card__description">{{ category.description|truncatewords:15 }}</p>
+            <span class="hc-category-card__count">{{ category.article_count }} article{{ category.article_count|pluralize }}</span>
+          </div>
+          <span class="hc-category-card__arrow">
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </span>
+        </a>
+        {% empty %}
+        <div class="hc-empty-state">
+          <span class="material-symbols-rounded">folder_off</span>
+          <p>No categories available yet. Please check back soon.</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Articles -->
+  {% if featured_articles %}
+  <section class="hc-featured">
+    <div class="container">
+      <div class="hc-section-header">
+        <div class="hc-section-header__left">
+          <span class="hc-section-badge">
+            <span class="material-symbols-rounded">star</span>
+            Featured
+          </span>
+          <h2 class="hc-section-title">Essential Guides</h2>
+          <p class="hc-section-subtitle">Must-read articles to get the most out of Packaxis</p>
+        </div>
+      </div>
+      
+      <div class="hc-featured__grid">
+        {% for article in featured_articles %}
+        <a href="{{ article.get_absolute_url }}" class="hc-article-card hc-article-card--featured">
+          <div class="hc-article-card__header">
+            {% if article.category %}
+            <span class="hc-article-card__category" style="--category-color: {{ article.category.color }}">
+              <span class="material-symbols-rounded">{{ article.category.icon }}</span>
+              {{ article.category.name }}
+            </span>
+            {% endif %}
+            <span class="hc-article-card__badge">Featured</span>
+          </div>
+          <h3 class="hc-article-card__title">{{ article.title }}</h3>
+          <p class="hc-article-card__excerpt">{{ article.excerpt|truncatewords:20 }}</p>
+          <div class="hc-article-card__footer">
+            <span class="hc-article-card__meta">
+              <span class="material-symbols-rounded">schedule</span>
+              {{ article.estimated_read_time }} min read
+            </span>
+            <span class="hc-article-card__link">
+              Read Article
+              <span class="material-symbols-rounded">arrow_forward</span>
+            </span>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Popular Articles -->
+  {% if popular_articles %}
+  <section class="hc-popular">
+    <div class="container">
+      <div class="hc-popular__wrapper">
+        <div class="hc-popular__header">
+          <span class="hc-section-badge">
+            <span class="material-symbols-rounded">trending_up</span>
+            Most Viewed
+          </span>
+          <h2 class="hc-section-title">Popular Articles</h2>
+          <p class="hc-section-subtitle">Frequently accessed articles by our customers</p>
+        </div>
+        
+        <div class="hc-popular__list">
+          {% for article in popular_articles %}
+          <a href="{{ article.get_absolute_url }}" class="hc-popular-item">
+            <span class="hc-popular-item__rank">{{ forloop.counter }}</span>
+            <div class="hc-popular-item__content">
+              <h4 class="hc-popular-item__title">{{ article.title }}</h4>
+              <div class="hc-popular-item__meta">
+                {% if article.category %}
+                <span class="hc-popular-item__category">{{ article.category.name }}</span>
+                {% endif %}
+                <span class="hc-popular-item__views">
+                  <span class="material-symbols-rounded">visibility</span>
+                  {{ article.views_count }} views
+                </span>
+              </div>
+            </div>
+            <span class="hc-popular-item__arrow">
+              <span class="material-symbols-rounded">chevron_right</span>
+            </span>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Recently Updated -->
+  {% if recent_articles %}
+  <section class="hc-recent">
+    <div class="container">
+      <div class="hc-section-header">
+        <div class="hc-section-header__left">
+          <span class="hc-section-badge">
+            <span class="material-symbols-rounded">update</span>
+            Updated
+          </span>
+          <h2 class="hc-section-title">Recently Updated</h2>
+          <p class="hc-section-subtitle">Latest additions and updates to our help center</p>
+        </div>
+        <a href="{% url 'content:help_search' %}" class="hc-view-all-btn">
+          <span>View All Articles</span>
+          <span class="material-symbols-rounded">arrow_forward</span>
+        </a>
+      </div>
+      
+      <div class="hc-recent__list">
+        {% for article in recent_articles %}
+        <a href="{{ article.get_absolute_url }}" class="hc-recent-item">
+          <div class="hc-recent-item__icon">
+            <span class="material-symbols-rounded">{{ article.category.icon|default:'article' }}</span>
+          </div>
+          <div class="hc-recent-item__content">
+            <h4 class="hc-recent-item__title">{{ article.title }}</h4>
+            <p class="hc-recent-item__excerpt">{{ article.excerpt|truncatewords:12 }}</p>
+            <span class="hc-recent-item__date">
+              Updated {{ article.updated_at|timesince }} ago
+            </span>
+          </div>
+          <span class="hc-recent-item__arrow">
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </span>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  <!-- Quick Links -->
+  <section class="hc-quick-links">
+    <div class="container">
+      <div class="hc-quick-links__grid">
+        <div class="hc-quick-card">
+          <div class="hc-quick-card__icon">
+            <span class="material-symbols-rounded">chat</span>
+          </div>
+          <h3 class="hc-quick-card__title">Live Chat</h3>
+          <p class="hc-quick-card__text">Get instant help from our support team during business hours.</p>
+          <button class="hc-quick-card__btn" onclick="window.Tawk_API?.toggle()">
+            <span>Start Chat</span>
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </button>
+        </div>
+        
+        <div class="hc-quick-card">
+          <div class="hc-quick-card__icon">
+            <span class="material-symbols-rounded">mail</span>
+          </div>
+          <h3 class="hc-quick-card__title">Email Support</h3>
+          <p class="hc-quick-card__text">Send us a message and we'll respond within 24 hours.</p>
+          <a href="{% url 'content:contact' %}" class="hc-quick-card__btn">
+            <span>Contact Us</span>
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </a>
+        </div>
+        
+        <div class="hc-quick-card">
+          <div class="hc-quick-card__icon">
+            <span class="material-symbols-rounded">phone</span>
+          </div>
+          <h3 class="hc-quick-card__title">Call Us</h3>
+          <p class="hc-quick-card__text">Speak directly with our team for urgent inquiries.</p>
+          <a href="tel:+18448444022" class="hc-quick-card__btn">
+            <span>+1 (844) 844-4022</span>
+            <span class="material-symbols-rounded">call</span>
+          </a>
+        </div>
+        
+        <div class="hc-quick-card">
+          <div class="hc-quick-card__icon">
+            <span class="material-symbols-rounded">quiz</span>
+          </div>
+          <h3 class="hc-quick-card__title">FAQ</h3>
+          <p class="hc-quick-card__text">Browse frequently asked questions for quick answers.</p>
+          <a href="{% url 'content:faq_list' %}" class="hc-quick-card__btn">
+            <span>View FAQ</span>
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="hc-cta">
+    <div class="container">
+      <div class="hc-cta__wrapper">
+        <div class="hc-cta__content">
+          <h2 class="hc-cta__title">Can't Find What You're Looking For?</h2>
+          <p class="hc-cta__text">Our support team is ready to help you with any questions or concerns.</p>
+        </div>
+        <div class="hc-cta__actions">
+          <a href="{% url 'content:contact' %}" class="hc-cta__btn hc-cta__btn--primary">
+            <span class="material-symbols-rounded">mail</span>
+            <span>Contact Support</span>
+          </a>
+          <a href="{% url 'content:faq_list' %}" class="hc-cta__btn hc-cta__btn--secondary">
+            <span class="material-symbols-rounded">help</span>
+            <span>Browse FAQ</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function() {
+  'use strict';
+  
+  // Configuration
+  const CONFIG = {
+    debounceMs: 300,
+    minSearchLength: 2,
+    maxDropdownResults: 5
+  };
+  
+  // DOM Elements
+  const searchInput = document.getElementById('hc-search-input');
+  const searchBtn = document.getElementById('hc-search-btn');
+  const clearBtn = document.getElementById('hc-search-clear');
+  const liveResults = document.getElementById('hc-live-results');
+  const resultsGrid = document.getElementById('hc-results-grid');
+  const articlesGrid = document.getElementById('hc-articles-grid');
+  const resultsCount = document.getElementById('hc-results-count');
+  const clearResultsBtn = document.getElementById('hc-clear-results');
+  const defaultContent = document.getElementById('hc-default-content');
+  const loadingOverlay = document.getElementById('hc-loading-overlay');
+  const shortcuts = document.querySelectorAll('.hc-premium-search__shortcut[data-search]');
+  
+  // State
+  let debounceTimer = null;
+  let currentQuery = '';
+  let activeResultIndex = -1;
+  
+  // Utility: Debounce
+  function debounce(func, wait) {
+    return function(...args) {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => func.apply(this, args), wait);
+    };
+  }
+  
+  // Utility: Escape HTML
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+  
+  // Utility: Highlight search query in text
+  function highlightText(text, query) {
+    if (!query || !text) return escapeHtml(text || '');
+    const escaped = escapeHtml(text);
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return escaped.replace(regex, '<mark>$1</mark>');
+  }
+  
+  // Update URL without page reload
+  function updateURL(query) {
+    const url = new URL(window.location);
+    if (query) {
+      url.searchParams.set('q', query);
+    } else {
+      url.searchParams.delete('q');
+    }
+    history.pushState({ query }, '', url);
+  }
+  
+  // Show/hide loading overlay
+  function setLoading(show) {
+    loadingOverlay.classList.toggle('active', show);
+  }
+  
+  // Show/hide clear button
+  function updateClearButton() {
+    clearBtn.classList.toggle('visible', searchInput.value.length > 0);
+  }
+  
+  // Render live search dropdown results
+  function renderLiveResults(results, query) {
+    if (!results || results.length === 0) {
+      liveResults.innerHTML = `
+        <div class="hc-live-results__empty">
+          <span class="material-symbols-rounded hc-live-results__empty-icon">search_off</span>
+          <h4 class="hc-live-results__empty-title">No results found</h4>
+          <p class="hc-live-results__empty-text">Try different keywords or browse our categories</p>
+        </div>
+      `;
+      liveResults.classList.add('active');
+      return;
+    }
+    
+    const displayResults = results.slice(0, CONFIG.maxDropdownResults);
+    const hasMore = results.length > CONFIG.maxDropdownResults;
+    
+    let html = `
+      <div class="hc-live-results__header">
+        <span class="hc-live-results__title">Search Results</span>
+        <span class="hc-live-results__count">${results.length} found</span>
+      </div>
+      <div class="hc-live-results__list">
+    `;
+    
+    displayResults.forEach((item, index) => {
+      const categoryColor = item.category_color || (item.category?.color) || '#0D7B7F';
+      html += `
+        <a href="${item.url}" class="hc-live-results__item" style="--category-color: ${categoryColor}" role="option" data-index="${index}">
+          <div class="hc-live-results__icon">
+            <span class="material-symbols-rounded">${item.icon || (item.category?.icon) || 'article'}</span>
+          </div>
+          <div class="hc-live-results__content">
+            <span class="hc-live-results__category">${escapeHtml(typeof item.category === 'object' ? (item.category?.name || 'General') : (item.category || 'General'))}</span>
+            <span class="hc-live-results__name">${highlightText(item.title, query)}</span>
+            ${item.excerpt ? `<span class="hc-live-results__excerpt">${highlightText(item.excerpt, query)}</span>` : ''}
+          </div>
+          <span class="hc-live-results__arrow">
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </span>
+        </a>
+      `;
+    });
+    
+    html += '</div>';
+    
+    if (hasMore) {
+      html += `
+        <div class="hc-live-results__footer">
+          <a href="/help/search/?q=${encodeURIComponent(query)}" class="hc-live-results__view-all">
+            View all ${results.length} results
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </a>
+        </div>
+      `;
+    }
+    
+    liveResults.innerHTML = html;
+    liveResults.classList.add('active');
+    activeResultIndex = -1;
+  }
+  
+  // Render full results grid
+  function renderResultsGrid(results, query) {
+    resultsCount.textContent = `${results.length} article${results.length !== 1 ? 's' : ''}`;
+    
+    if (results.length === 0) {
+      articlesGrid.innerHTML = `
+        <div class="hc-empty-state" style="grid-column: 1 / -1; padding: var(--space-16) var(--space-8);">
+          <span class="material-symbols-rounded" style="font-size: 64px; color: var(--text-muted); opacity: 0.5;">search_off</span>
+          <h3 style="margin: var(--space-4) 0 var(--space-2); font-size: var(--text-xl); color: var(--text-primary);">No articles found</h3>
+          <p style="color: var(--text-muted);">Try searching with different keywords or browse our categories below</p>
+        </div>
+      `;
+      return;
+    }
+    
+    let html = '';
+    results.forEach((item, index) => {
+      const categoryColor = item.category_color || (item.category?.color) || '#0D7B7F';
+      html += `
+        <a href="${item.url}" class="hc-article-card" style="--category-color: ${categoryColor}; animation-delay: ${index * 50}ms;">
+          <div class="hc-article-card__header">
+            <span class="hc-article-card__category" style="--category-color: ${categoryColor}">
+              <span class="material-symbols-rounded">${item.icon || (item.category?.icon) || 'article'}</span>
+              ${escapeHtml(typeof item.category === 'object' ? (item.category?.name || 'General') : (item.category || 'General'))}
+            </span>
+            ${item.difficulty ? `<span class="hc-article-card__difficulty">${item.difficulty}</span>` : ''}
+          </div>
+          <h3 class="hc-article-card__title">${highlightText(item.title, query)}</h3>
+          <p class="hc-article-card__excerpt">${highlightText(item.excerpt || '', query)}</p>
+          <div class="hc-article-card__footer">
+            <span class="hc-article-card__meta">
+              <span class="material-symbols-rounded">schedule</span>
+              ${item.read_time || 3} min read
+            </span>
+            <span class="hc-article-card__link">
+              Read Article
+              <span class="material-symbols-rounded">arrow_forward</span>
+            </span>
+          </div>
+        </a>
+      `;
+    });
+    
+    articlesGrid.innerHTML = html;
+  }
+  
+  // Show loading in dropdown
+  function showDropdownLoading() {
+    liveResults.innerHTML = `
+      <div class="hc-live-results__loading">
+        <div class="hc-loading-spinner"></div>
+        <span class="hc-live-results__loading-text">Searching...</span>
+      </div>
+    `;
+    liveResults.classList.add('active');
+  }
+  
+  // Perform search
+  async function performSearch(query, showOverlay = false) {
+    if (!query || query.length < CONFIG.minSearchLength) {
+      hideLiveResults();
+      return;
+    }
+    
+    currentQuery = query;
+    
+    if (showOverlay) {
+      setLoading(true);
+    } else {
+      showDropdownLoading();
+    }
+    
+    try {
+      const response = await fetch(`/help/search/?q=${encodeURIComponent(query)}&ajax=1`, {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+      });
+      
+      if (!response.ok) throw new Error('Search failed');
+      
+      const data = await response.json();
+      
+      if (showOverlay) {
+        // Show full results grid
+        updateURL(query);
+        renderResultsGrid(data.results || data.articles || [], query);
+        resultsGrid.classList.add('active');
+        defaultContent.style.display = 'none';
+        hideLiveResults();
+      } else {
+        // Show dropdown results
+        renderLiveResults(data.results || data.articles || [], query);
+      }
+    } catch (error) {
+      console.error('Search error:', error);
+      if (!showOverlay) {
+        liveResults.innerHTML = `
+          <div class="hc-live-results__empty">
+            <span class="material-symbols-rounded hc-live-results__empty-icon">error</span>
+            <h4 class="hc-live-results__empty-title">Search error</h4>
+            <p class="hc-live-results__empty-text">Please try again later</p>
+          </div>
+        `;
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+  
+  // Hide live results dropdown
+  function hideLiveResults() {
+    liveResults.classList.remove('active');
+    activeResultIndex = -1;
+  }
+  
+  // Clear search
+  function clearSearch() {
+    searchInput.value = '';
+    currentQuery = '';
+    hideLiveResults();
+    updateClearButton();
+    resultsGrid.classList.remove('active');
+    defaultContent.style.display = '';
+    updateURL('');
+    searchInput.focus();
+  }
+  
+  // Navigate dropdown results with keyboard
+  function navigateResults(direction) {
+    const items = liveResults.querySelectorAll('.hc-live-results__item');
+    if (!items.length) return;
+    
+    items.forEach(item => item.classList.remove('active'));
+    
+    if (direction === 'down') {
+      activeResultIndex = Math.min(activeResultIndex + 1, items.length - 1);
+    } else {
+      activeResultIndex = Math.max(activeResultIndex - 1, -1);
+    }
+    
+    if (activeResultIndex >= 0) {
+      items[activeResultIndex].classList.add('active');
+      items[activeResultIndex].scrollIntoView({ block: 'nearest' });
+    }
+  }
+  
+  // Event Listeners
+  
+  // Input event with debounce
+  searchInput.addEventListener('input', debounce(function() {
+    const query = this.value.trim();
+    updateClearButton();
+    
+    if (query.length >= CONFIG.minSearchLength) {
+      performSearch(query, false);
+    } else {
+      hideLiveResults();
+    }
+  }, CONFIG.debounceMs));
+  
+  // Focus event
+  searchInput.addEventListener('focus', function() {
+    const query = this.value.trim();
+    if (query.length >= CONFIG.minSearchLength && liveResults.innerHTML) {
+      liveResults.classList.add('active');
+    }
+  });
+  
+  // Keyboard navigation
+  searchInput.addEventListener('keydown', function(e) {
+    switch (e.key) {
+      case 'Enter':
+        e.preventDefault();
+        const activeItem = liveResults.querySelector('.hc-live-results__item.active');
+        if (activeItem) {
+          window.location.href = activeItem.href;
+        } else if (this.value.trim()) {
+          performSearch(this.value.trim(), true);
+        }
+        break;
+        
+      case 'Escape':
+        e.preventDefault();
+        if (liveResults.classList.contains('active')) {
+          hideLiveResults();
+        } else {
+          clearSearch();
+        }
+        break;
+        
+      case 'ArrowDown':
+        e.preventDefault();
+        if (liveResults.classList.contains('active')) {
+          navigateResults('down');
+        }
+        break;
+        
+      case 'ArrowUp':
+        e.preventDefault();
+        if (liveResults.classList.contains('active')) {
+          navigateResults('up');
+        }
+        break;
+    }
+  });
+  
+  // Search button click
+  searchBtn.addEventListener('click', function() {
+    const query = searchInput.value.trim();
+    if (query) {
+      performSearch(query, true);
+    }
+  });
+  
+  // Clear button click
+  clearBtn.addEventListener('click', clearSearch);
+  
+  // Clear results button click
+  clearResultsBtn.addEventListener('click', clearSearch);
+  
+  // Shortcut clicks
+  shortcuts.forEach(shortcut => {
+    shortcut.addEventListener('click', function() {
+      const query = this.dataset.search;
+      if (query) {
+        searchInput.value = query;
+        updateClearButton();
+        performSearch(query, true);
+      }
+    });
+  });
+  
+  // Click outside to close dropdown
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.hc-premium-search')) {
+      hideLiveResults();
+    }
+  });
+  
+  // Handle browser back/forward
+  window.addEventListener('popstate', function(e) {
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get('q') || '';
+    
+    searchInput.value = query;
+    updateClearButton();
+    
+    if (query) {
+      performSearch(query, true);
+    } else {
+      clearSearch();
+    }
+  });
+  
+  // Initialize from URL
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialQuery = urlParams.get('q');
+  if (initialQuery) {
+    searchInput.value = initialQuery;
+    updateClearButton();
+    performSearch(initialQuery, true);
+  }
+  
+  // Global keyboard shortcut (/ to focus search)
+  document.addEventListener('keydown', function(e) {
+    if (e.key === '/' && !['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) {
+      e.preventDefault();
+      searchInput.focus();
+    }
+  });
+})();
+</script>
+
+<!-- Help Center JavaScript (deferred for performance) -->
+<script src="{% static 'js/help-center.js' %}" defer></script>
+{% endblock %}

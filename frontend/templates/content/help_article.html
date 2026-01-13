@@ -1,0 +1,307 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ article.meta_title|default:article.title }} - Packaxis Help{% endblock %}
+
+{% block extra_head %}
+<!-- SEO Meta Tags -->
+<meta name="description" content="{{ article.meta_description|default:article.excerpt }}">
+<meta name="keywords" content="{{ article.keywords|default:article.tags }}">
+<link rel="canonical" href="{{ request.build_absolute_uri }}">
+<meta name="author" content="{{ article.author.get_full_name|default:'Packaxis' }}">
+
+<!-- Open Graph -->
+<meta property="og:title" content="{{ article.title }} - Packaxis Help">
+<meta property="og:description" content="{{ article.meta_description|default:article.excerpt }}">
+<meta property="og:type" content="article">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="article:published_time" content="{{ article.published_at|date:'c' }}">
+<meta property="article:modified_time" content="{{ article.updated_at|date:'c' }}">
+{% if article.category %}
+<meta property="article:section" content="{{ article.category.name }}">
+{% endif %}
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{{ article.title }}">
+<meta name="twitter:description" content="{{ article.excerpt }}">
+
+<!-- Schema.org Article -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "{{ article.title|escapejs }}",
+  "description": "{{ article.excerpt|escapejs }}",
+  "url": "{{ request.build_absolute_uri }}",
+  "datePublished": "{{ article.published_at|date:'c' }}",
+  "dateModified": "{{ article.updated_at|date:'c' }}",
+  "author": {
+    "@type": "Person",
+    "name": "{{ article.author.get_full_name|default:'Packaxis Support' }}"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Packaxis",
+    "url": "https://packaxis.ca"
+  },
+  {% if article.category %}
+  "articleSection": "{{ article.category.name }}",
+  {% endif %}
+  "wordCount": {{ article.content|wordcount }},
+  "timeRequired": "PT{{ article.estimated_read_time }}M",
+  "interactionStatistic": {
+    "@type": "InteractionCounter",
+    "interactionType": "https://schema.org/ReadAction",
+    "userInteractionCount": {{ article.views_count }}
+  }
+}
+</script>
+
+<!-- HowTo Schema if article contains steps -->
+{% if 'step' in article.content|lower or 'how to' in article.title|lower %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "HowTo",
+  "name": "{{ article.title|escapejs }}",
+  "description": "{{ article.excerpt|escapejs }}"
+}
+</script>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<nav class="breadcrumb-nav" aria-label="Breadcrumb">
+  <div class="container">
+    <ol class="breadcrumb-list">
+      <li class="breadcrumb-item">
+        <a href="{% url 'home' %}" class="breadcrumb-link">Home</a>
+      </li>
+      <li class="breadcrumb-separator" aria-hidden="true">
+        <span class="material-symbols-rounded">chevron_right</span>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'content:help_center' %}" class="breadcrumb-link">Help Center</a>
+      </li>
+      {% if article.category %}
+      <li class="breadcrumb-separator" aria-hidden="true">
+        <span class="material-symbols-rounded">chevron_right</span>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{{ article.category.get_absolute_url }}" class="breadcrumb-link">{{ article.category.name }}</a>
+      </li>
+      {% endif %}
+      <li class="breadcrumb-separator" aria-hidden="true">
+        <span class="material-symbols-rounded">chevron_right</span>
+      </li>
+      <li class="breadcrumb-item breadcrumb-item--current">
+        <span aria-current="page">{{ article.title|truncatewords:5 }}</span>
+      </li>
+    </ol>
+  </div>
+</nav>
+
+<!-- Article Content -->
+<article class="hc-article">
+  <div class="container">
+    <div class="hc-article__wrapper">
+      <!-- Main Content -->
+      <main class="hc-article__main">
+        <!-- Article Header -->
+        <header class="hc-article__header">
+          {% if article.category %}
+          <a href="{{ article.category.get_absolute_url }}" class="hc-article__category" style="--category-color: {{ article.category.color }}">
+            <span class="material-symbols-rounded">{{ article.category.icon }}</span>
+            {{ article.category.name }}
+          </a>
+          {% endif %}
+          
+          <h1 class="hc-article__title">{{ article.title }}</h1>
+          
+          <p class="hc-article__excerpt">{{ article.excerpt }}</p>
+          
+          <div class="hc-article__meta">
+            <span class="hc-article__meta-item">
+              <span class="material-symbols-rounded">schedule</span>
+              {{ article.estimated_read_time }} min read
+            </span>
+            <span class="hc-article__meta-item">
+              <span class="material-symbols-rounded">visibility</span>
+              {{ article.views_count }} views
+            </span>
+            <span class="hc-article__meta-item">
+              <span class="material-symbols-rounded">update</span>
+              Updated {{ article.updated_at|date:"M d, Y" }}
+            </span>
+            {% if article.difficulty != 'beginner' %}
+            <span class="hc-article__meta-item hc-article__difficulty hc-article__difficulty--{{ article.difficulty }}">
+              {{ article.get_difficulty_display }}
+            </span>
+            {% endif %}
+          </div>
+        </header>
+        
+        <!-- Article Body -->
+        <div class="hc-article__body">
+          {{ article.content|safe }}
+        </div>
+        
+        <!-- Article Tags -->
+        {% if article.tags_list %}
+        <div class="hc-article__tags">
+          <span class="hc-article__tags-label">
+            <span class="material-symbols-rounded">sell</span>
+            Tags:
+          </span>
+          {% for tag in article.tags_list %}
+          <a href="{% url 'content:help_search' %}?q={{ tag }}" class="hc-article__tag">{{ tag }}</a>
+          {% endfor %}
+        </div>
+        {% endif %}
+        
+        <!-- Feedback Section -->
+        <div class="hc-article__feedback" id="article-feedback">
+          <div class="hc-article__feedback-question">
+            <span class="material-symbols-rounded">help_outline</span>
+            <span>Was this article helpful?</span>
+          </div>
+          <div class="hc-article__feedback-buttons">
+            <button type="button" class="hc-feedback-btn hc-feedback-btn--yes" data-helpful="true">
+              <span class="material-symbols-rounded">thumb_up</span>
+              <span>Yes</span>
+              <span class="hc-feedback-btn__count">{{ article.helpful_yes }}</span>
+            </button>
+            <button type="button" class="hc-feedback-btn hc-feedback-btn--no" data-helpful="false">
+              <span class="material-symbols-rounded">thumb_down</span>
+              <span>No</span>
+              <span class="hc-feedback-btn__count">{{ article.helpful_no }}</span>
+            </button>
+          </div>
+          <div class="hc-article__feedback-success" style="display: none;">
+            <span class="material-symbols-rounded">check_circle</span>
+            <span>Thank you for your feedback!</span>
+          </div>
+        </div>
+        
+        <!-- Article Navigation -->
+        <nav class="hc-article__nav">
+          {% if prev_article %}
+          <a href="{{ prev_article.get_absolute_url }}" class="hc-article__nav-item hc-article__nav-item--prev">
+            <span class="hc-article__nav-label">
+              <span class="material-symbols-rounded">arrow_back</span>
+              Previous Article
+            </span>
+            <span class="hc-article__nav-title">{{ prev_article.title }}</span>
+          </a>
+          {% else %}
+          <div class="hc-article__nav-item hc-article__nav-item--empty"></div>
+          {% endif %}
+          
+          {% if next_article %}
+          <a href="{{ next_article.get_absolute_url }}" class="hc-article__nav-item hc-article__nav-item--next">
+            <span class="hc-article__nav-label">
+              Next Article
+              <span class="material-symbols-rounded">arrow_forward</span>
+            </span>
+            <span class="hc-article__nav-title">{{ next_article.title }}</span>
+          </a>
+          {% else %}
+          <div class="hc-article__nav-item hc-article__nav-item--empty"></div>
+          {% endif %}
+        </nav>
+      </main>
+      
+      <!-- Sidebar -->
+      <aside class="hc-article__sidebar">
+        <!-- Table of Contents (generated via JS) -->
+        <div class="hc-article__toc" id="table-of-contents">
+          <h3 class="hc-article__toc-title">
+            <span class="material-symbols-rounded">list</span>
+            On This Page
+          </h3>
+          <nav class="hc-article__toc-nav">
+            <!-- Populated via JavaScript -->
+          </nav>
+        </div>
+        
+        <!-- Related Articles -->
+        {% if related_articles %}
+        <div class="hc-article__related">
+          <h3 class="hc-article__related-title">
+            <span class="material-symbols-rounded">auto_awesome</span>
+            Related Articles
+          </h3>
+          <div class="hc-article__related-list">
+            {% for related in related_articles %}
+            <a href="{{ related.get_absolute_url }}" class="hc-article__related-item">
+              <span class="material-symbols-rounded">description</span>
+              <span>{{ related.title }}</span>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+        
+        <!-- Need Help Card -->
+        <div class="hc-article__help-card">
+          <span class="material-symbols-rounded">support_agent</span>
+          <h4>Still Need Help?</h4>
+          <p>Our support team is here for you</p>
+          <a href="{% url 'content:contact' %}" class="hc-article__help-btn">
+            Contact Support
+          </a>
+        </div>
+        
+        <!-- Share -->
+        <div class="hc-article__share">
+          <h4 class="hc-article__share-title">Share This Article</h4>
+          <div class="hc-article__share-buttons">
+            <button type="button" class="hc-share-btn" data-share="copy" title="Copy link">
+              <span class="material-symbols-rounded">link</span>
+            </button>
+            <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri|urlencode }}&text={{ article.title|urlencode }}" target="_blank" rel="noopener" class="hc-share-btn" title="Share on Twitter">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            </a>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&url={{ request.build_absolute_uri|urlencode }}&title={{ article.title|urlencode }}" target="_blank" rel="noopener" class="hc-share-btn" title="Share on LinkedIn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.32 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.79M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z"/></svg>
+            </a>
+            <a href="mailto:?subject={{ article.title|urlencode }}&body=Check out this article: {{ request.build_absolute_uri|urlencode }}" class="hc-share-btn" title="Share via Email">
+              <span class="material-symbols-rounded">mail</span>
+            </a>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</article>
+
+<!-- More from Category -->
+{% if article.category %}
+<section class="hc-more-articles">
+  <div class="container">
+    <div class="hc-more-articles__header">
+      <h2 class="hc-more-articles__title">More from {{ article.category.name }}</h2>
+      <a href="{{ article.category.get_absolute_url }}" class="hc-more-articles__link">
+        View All
+        <span class="material-symbols-rounded">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<!-- Help Center JavaScript (deferred for performance) -->
+<script src="{% static 'js/help-center.js' %}" defer></script>
+<script>
+  // Article-specific initialization
+  window.articleConfig = {
+    slug: '{{ article.slug }}',
+    feedbackUrl: '{% url "content:help_article_feedback" article.slug %}',
+    csrfToken: '{{ csrf_token }}'
+  };
+</script>
+{% endblock %}

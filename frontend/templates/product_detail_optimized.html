@@ -1,0 +1,1010 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block extra_head %}{% endblock %}
+
+{% block content %}
+<section class="pdp-section">
+  <div class="container">
+    
+    <!-- Breadcrumb -->
+    <nav class="pdp-breadcrumb">
+      <a href="/" class="pdp-breadcrumb-link">Home</a>
+      <span class="pdp-breadcrumb-separator">/</span>
+      <a href="/products/" class="pdp-breadcrumb-link">Products</a>
+      <span class="pdp-breadcrumb-separator">/</span>
+      {% if product.category %}
+      <a href="/products/?category={{ product.category.slug }}" class="pdp-breadcrumb-link">{{ product.category.name }}</a>
+      <span class="pdp-breadcrumb-separator">/</span>
+      {% endif %}
+      <span class="pdp-breadcrumb-current">{{ product.name }}</span>
+    </nav>
+    
+    <!-- Main Product Grid -->
+    <div class="pdp-grid">
+      
+      <!-- LEFT COLUMN: Product Visuals -->
+      <div class="pdp-gallery-column">
+        <div class="pdp-gallery">
+          <!-- Main Image Display -->
+          <div class="pdp-gallery-main" id="pdp-main-gallery">
+            {% if product.images.all %}
+              <div class="pdp-gallery-main-image" data-zoom-enabled="true">
+                <img 
+                  id="pdp-main-image" 
+                  src="{{ product.images.first.image.url }}" 
+                  alt="{{ product.name }}"
+                  class="pdp-main-img"
+                >
+                <button class="pdp-zoom-btn" id="pdp-zoom-toggle" aria-label="Zoom image">
+                  <span class="material-symbols-rounded">zoom_in</span>
+                </button>
+              </div>
+            {% else %}
+              <div class="pdp-gallery-placeholder">
+                <span class="material-symbols-rounded">shopping_bag</span>
+                <p>No image available</p>
+              </div>
+            {% endif %}
+          </div>
+          
+          <!-- Thumbnail Navigation -->
+          {% if product.images.all|length > 1 %}
+          <div class="pdp-gallery-thumbs">
+            {% for image in product.images.all %}
+            <button 
+              class="pdp-gallery-thumb {% if forloop.first %}active{% endif %}" 
+              data-image-url="{{ image.image.url }}"
+              data-image-alt="{{ image.alt_text|default:product.name }}"
+              aria-label="View image {{ forloop.counter }}"
+            >
+              <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}">
+            </button>
+            {% endfor %}
+          </div>
+          {% endif %}
+          
+          <!-- Video Demo (if available) -->
+          {% if product.attributes.video_url %}
+          <div class="pdp-video-section">
+            <h3 class="pdp-video-title">
+              <span class="material-symbols-rounded">play_circle</span>
+              Product Demo Video
+            </h3>
+            <div class="pdp-video-wrapper">
+              <iframe 
+                src="{{ product.attributes.video_url }}" 
+                frameborder="0" 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                allowfullscreen
+                title="{{ product.name }} demo video"
+              ></iframe>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      
+      <!-- RIGHT COLUMN: Product Information -->
+      <div class="pdp-info-column">
+        <div class="pdp-info-sticky">
+          
+          <!-- Product Header -->
+          <div class="pdp-header">
+            {% if product.category %}
+            <span class="pdp-category">{{ product.category.name }}</span>
+            {% endif %}
+            
+            <h1 class="pdp-title">{{ product.name }}</h1>
+            
+            <!-- Rating & Reviews -->
+            <div class="pdp-rating">
+              {% if product.reviews.all %}
+              <div class="pdp-stars">
+                {% with avg_rating=product.reviews.all|length %}
+                {% for i in "12345" %}
+                  <span class="material-symbols-rounded{% if forloop.counter <= 4 %} filled{% endif %}">star</span>
+                {% endfor %}
+                {% endwith %}
+              </div>
+              <span class="pdp-rating-text">4.5</span>
+              <span class="pdp-reviews-count">({{ product.reviews.all|length }} reviews)</span>
+              {% else %}
+              <div class="pdp-stars">
+                {% for i in "12345" %}
+                  <span class="material-symbols-rounded">star</span>
+                {% endfor %}
+              </div>
+              <span class="pdp-reviews-count">(No reviews yet)</span>
+              {% endif %}
+            </div>
+          </div>
+          
+          <!-- Pricing Display -->
+          <div class="pdp-pricing">
+            <div class="pdp-price-main">
+              <span class="pdp-price-label" id="pdp-price-label">Retail Price (B2C)</span>
+              <div class="pdp-price-wrapper">
+                <span class="pdp-price" id="pdp-current-price">${{ product.retail_price }}</span>
+                <span class="pdp-price-unit" id="pdp-price-unit">/unit</span>
+              </div>
+              <div class="pdp-price-total-wrapper" id="pdp-total-wrapper" style="display: none;">
+                <span class="pdp-total-label">Total Price:</span>
+                <span class="pdp-total-price" id="pdp-total-price">$0.00</span>
+              </div>
+              <div class="pdp-savings-info" id="pdp-savings-info" style="display: none;">
+                <span class="material-symbols-rounded">local_offer</span>
+                <span id="pdp-savings-text">You save $0.00 with bulk pricing!</span>
+              </div>
+            </div>
+            
+            {% if product.pricing_tiers.all %}
+            <div class="pdp-bulk-pricing">
+              <h3 class="pdp-bulk-title">
+                <span class="material-symbols-rounded">inventory_2</span>
+                Bulk Pricing (B2B)
+              </h3>
+              <p class="pdp-bulk-subtitle">Save up to 30% with larger orders</p>
+              <div class="pdp-bulk-table">
+                {% for tier in product.pricing_tiers.all %}
+                <div class="pdp-bulk-row" data-tier-min="{{ tier.min_qty }}" data-tier-max="{{ tier.max_qty }}" data-tier-price="{{ tier.wholesale_price }}">
+                  <div class="pdp-bulk-qty">
+                    <span class="pdp-bulk-qty-label">{{ tier.min_qty }}{% if tier.max_qty < 9999 %}-{{ tier.max_qty }}{% endif %}+ units</span>
+                  </div>
+                  <div class="pdp-bulk-price">
+                    <span class="pdp-bulk-price-value">${{ tier.wholesale_price }}</span>
+                    <span class="pdp-bulk-price-unit">/unit</span>
+                  </div>
+                  <div class="pdp-bulk-savings">
+                    <span class="pdp-bulk-savings-badge" data-wholesale="{{ tier.wholesale_price }}" data-retail="{{ product.retail_price }}"></span>
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+          </div>
+          
+          <!-- Quick Specs -->
+          <div class="pdp-specs-quick">
+            <h3 class="pdp-specs-title">Quick Specifications</h3>
+            <div class="pdp-specs-grid">
+              {% if product.length_cm and product.width_cm and product.height_cm %}
+              <div class="pdp-spec-item">
+                <span class="material-symbols-rounded">straighten</span>
+                <div>
+                  <span class="pdp-spec-label">Dimensions</span>
+                  <span class="pdp-spec-value">{{ product.length_cm }} × {{ product.width_cm }} × {{ product.height_cm }} cm</span>
+                </div>
+              </div>
+              {% endif %}
+              
+              {% if product.weight_kg %}
+              <div class="pdp-spec-item">
+                <span class="material-symbols-rounded">monitor_weight</span>
+                <div>
+                  <span class="pdp-spec-label">Weight</span>
+                  <span class="pdp-spec-value">{{ product.weight_kg }} kg</span>
+                </div>
+              </div>
+              {% endif %}
+              
+              <div class="pdp-spec-item">
+                <span class="material-symbols-rounded">warehouse</span>
+                <div>
+                  <span class="pdp-spec-label">Stock Status</span>
+                  <span class="pdp-spec-value {% if product.stock_qty > 0 %}in-stock{% else %}out-stock{% endif %}">
+                    {% if product.stock_qty > 0 %}
+                      ✓ In Stock ({{ product.stock_qty }} units)
+                    {% else %}
+                      ✗ Out of Stock
+                    {% endif %}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="pdp-spec-item">
+                <span class="material-symbols-rounded">shopping_cart</span>
+                <div>
+                  <span class="pdp-spec-label">Minimum Order</span>
+                  <span class="pdp-spec-value">{% if product.pricing_tiers.first %}{{ product.pricing_tiers.first.min_qty }}{% else %}1{% endif %} unit{% if product.pricing_tiers.first.min_qty > 1 %}s{% endif %}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Customization Options -->
+          {% if product.attributes.customization_available %}
+          <div class="pdp-customization">
+            <h3 class="pdp-customization-title">
+              <span class="material-symbols-rounded">palette</span>
+              Customization Options
+            </h3>
+            <div class="pdp-customization-options">
+              <div class="pdp-custom-option">
+                <label class="pdp-custom-label">
+                  <input type="checkbox" name="custom_printing" value="yes">
+                  <span>Custom Printing</span>
+                  <span class="pdp-custom-price">+$0.15/unit</span>
+                </label>
+              </div>
+              <div class="pdp-custom-option">
+                <label class="pdp-custom-label">
+                  <input type="checkbox" name="custom_color" value="yes">
+                  <span>Custom Colors</span>
+                  <span class="pdp-custom-price">+$0.10/unit</span>
+                </label>
+              </div>
+              <div class="pdp-custom-option">
+                <label class="pdp-custom-label">
+                  <input type="checkbox" name="premium_material" value="yes">
+                  <span>Premium Material</span>
+                  <span class="pdp-custom-price">+$0.25/unit</span>
+                </label>
+              </div>
+            </div>
+            <button class="pdp-custom-quote-btn">
+              <span class="material-symbols-rounded">format_quote</span>
+              Request Custom Quote
+            </button>
+          </div>
+          {% endif %}
+          
+          <!-- Add to Cart Actions -->
+          <div class="pdp-actions">
+            <div class="pdp-qty-selector">
+              <label for="pdp-qty-input" class="pdp-qty-label">Quantity</label>
+              <div class="pdp-qty-controls">
+                <button class="pdp-qty-btn" id="pdp-qty-minus" aria-label="Decrease quantity">
+                  <span class="material-symbols-rounded">remove</span>
+                </button>
+                <input 
+                  type="number" 
+                  id="pdp-qty-input" 
+                  class="pdp-qty-input" 
+                  value="{% if product.pricing_tiers.first %}{{ product.pricing_tiers.first.min_qty }}{% else %}1{% endif %}" 
+                  min="{% if product.pricing_tiers.first %}{{ product.pricing_tiers.first.min_qty }}{% else %}1{% endif %}" 
+                  max="{{ product.stock_qty }}"
+                  step="{% if product.pricing_tiers.first %}{{ product.pricing_tiers.first.min_qty }}{% else %}1{% endif %}"
+                >
+                <button class="pdp-qty-btn" id="pdp-qty-plus" aria-label="Increase quantity">
+                  <span class="material-symbols-rounded">add</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="pdp-action-buttons">
+              <button 
+                class="pdp-btn pdp-btn-primary"
+                data-add-to-cart
+                data-product-id="{{ product.id }}"
+                data-product-name="{{ product.name }}"
+                data-price="{{ product.retail_price }}"
+                data-image="{% if product.images.first %}{{ product.images.first.image.url }}{% endif %}"
+                data-qty-selector="#pdp-qty-input"
+                {% if product.pricing_tiers.all %}
+                data-pricing-tiers='[{% for tier in product.pricing_tiers.all %}{"minQty":{{ tier.min_qty }},"maxQty":{{ tier.max_qty }},"price":{{ tier.wholesale_price }}}{% if not forloop.last %},{% endif %}{% endfor %}]'
+                {% endif %}
+                {% if product.stock_qty == 0 %}disabled{% endif %}
+              >
+                <span class="material-symbols-rounded">shopping_cart</span>
+                {% if product.stock_qty > 0 %}Add to Cart{% else %}Out of Stock{% endif %}
+              </button>
+              
+              <button class="pdp-btn pdp-btn-secondary" id="pdp-wishlist-btn" data-product-id="{{ product.id }}" aria-label="Add to wishlist">
+                <span class="material-symbols-rounded light">favorite</span>
+                Wishlist
+              </button>
+            </div>
+          </div>
+          
+          <!-- Trust Badges -->
+          <div class="pdp-trust-badges">
+            <div class="pdp-trust-item">
+              <span class="material-symbols-rounded">eco</span>
+              <span>100% Eco-Friendly</span>
+            </div>
+            <div class="pdp-trust-item">
+              <span class="material-symbols-rounded">local_shipping</span>
+              <span>Free Shipping $2000+</span>
+            </div>
+            <div class="pdp-trust-item">
+              <span class="material-symbols-rounded">verified</span>
+              <span>FSC Certified</span>
+            </div>
+            <div class="pdp-trust-item">
+              <span class="material-symbols-rounded">support_agent</span>
+              <span>24/7 Support</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- BELOW PRODUCT: Tabs Section -->
+    <div class="pdp-tabs-section">
+      <div class="pdp-tabs-nav">
+        <button class="pdp-tab-btn active" data-tab="description">Description</button>
+        <button class="pdp-tab-btn" data-tab="specifications">Specifications</button>
+        <button class="pdp-tab-btn" data-tab="customization">Customization</button>
+        <button class="pdp-tab-btn" data-tab="reviews">Reviews ({{ product.reviews.all|length }})</button>
+        <button class="pdp-tab-btn" data-tab="certifications">Certifications</button>
+      </div>
+      
+      <div class="pdp-tabs-content">
+        <!-- Description Tab -->
+        <div class="pdp-tab-panel active" id="tab-description">
+          <h2 class="pdp-tab-title">Product Description</h2>
+          <div class="pdp-description">
+            {{ product.long_description|default:product.description|linebreaks }}
+          </div>
+          
+          {% if product.attributes.features %}
+          <h3 class="pdp-features-title">Key Features</h3>
+          <ul class="pdp-features-list">
+            <li>Premium quality kraft paper construction</li>
+            <li>Reinforced handles for heavy loads</li>
+            <li>100% recyclable and biodegradable</li>
+            <li>Custom printing available</li>
+            <li>FSC certified materials</li>
+          </ul>
+          {% endif %}
+        </div>
+        
+        <!-- Specifications Tab -->
+        <div class="pdp-tab-panel" id="tab-specifications">
+          <h2 class="pdp-tab-title">Technical Specifications</h2>
+          <div class="pdp-spec-table">
+            <div class="pdp-spec-row">
+              <span class="pdp-spec-key">SKU</span>
+              <span class="pdp-spec-val">{{ product.sku }}</span>
+            </div>
+            {% if product.length_cm %}
+            <div class="pdp-spec-row">
+              <span class="pdp-spec-key">Length</span>
+              <span class="pdp-spec-val">{{ product.length_cm }} cm</span>
+            </div>
+            {% endif %}
+            {% if product.width_cm %}
+            <div class="pdp-spec-row">
+              <span class="pdp-spec-key">Width</span>
+              <span class="pdp-spec-val">{{ product.width_cm }} cm</span>
+            </div>
+            {% endif %}
+            {% if product.height_cm %}
+            <div class="pdp-spec-row">
+              <span class="pdp-spec-key">Height</span>
+              <span class="pdp-spec-val">{{ product.height_cm }} cm</span>
+            </div>
+            {% endif %}
+            {% if product.weight_kg %}
+            <div class="pdp-spec-row">
+              <span class="pdp-spec-key">Weight</span>
+              <span class="pdp-spec-val">{{ product.weight_kg }} kg</span>
+            </div>
+            {% endif %}
+            <div class="pdp-spec-row">
+              <span class="pdp-spec-key">Material</span>
+              <span class="pdp-spec-val">{{ product.attributes.material|default:"Kraft Paper" }}</span>
+            </div>
+            <div class="pdp-spec-row">
+              <span class="pdp-spec-key">Color</span>
+              <span class="pdp-spec-val">{{ product.attributes.color|default:"Natural Brown" }}</span>
+            </div>
+            <div class="pdp-spec-row">
+              <span class="pdp-spec-key">Handle Type</span>
+              <span class="pdp-spec-val">{{ product.attributes.handle_type|default:"Twisted Paper" }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Customization Tab -->
+        <div class="pdp-tab-panel" id="tab-customization">
+          <h2 class="pdp-tab-title">Customization Options</h2>
+          <div class="pdp-custom-info">
+            <div class="pdp-custom-section">
+              <h3>Custom Printing</h3>
+              <p>Add your logo, brand colors, and messaging to create unique packaging that represents your business.</p>
+              <ul>
+                <li>Full-color digital printing</li>
+                <li>Pantone color matching</li>
+                <li>Multiple print locations available</li>
+                <li>Minimum order: 500 units</li>
+              </ul>
+            </div>
+            
+            <div class="pdp-custom-section">
+              <h3>Material Options</h3>
+              <p>Choose from various paper weights and finishes to match your product requirements.</p>
+              <ul>
+                <li>Standard kraft (70-90 GSM)</li>
+                <li>Premium kraft (100-120 GSM)</li>
+                <li>White coated paper</li>
+                <li>Recycled options available</li>
+              </ul>
+            </div>
+            
+            <div class="pdp-custom-section">
+              <h3>Size Customization</h3>
+              <p>Need a specific size? We can manufacture custom dimensions to fit your products perfectly.</p>
+              <button class="pdp-btn pdp-btn-primary">
+                <span class="material-symbols-rounded">request_quote</span>
+                Request Custom Size Quote
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Reviews Tab -->
+        <div class="pdp-tab-panel" id="tab-reviews">
+          <h2 class="pdp-tab-title">Customer Reviews</h2>
+          
+          <!-- Write Review Section - Only shown if user has purchased this product -->
+          <div class="pdp-write-review" id="write-review-section">
+            <div class="pdp-review-form-container" id="review-form-container">
+              <!-- Content loaded dynamically based on purchase status -->
+              <div class="pdp-review-check" id="review-eligibility-check">
+                <span class="material-symbols-rounded">hourglass_empty</span>
+                <p>Checking your eligibility to review...</p>
+              </div>
+            </div>
+          </div>
+          
+          {% if product.reviews.all %}
+          <div class="pdp-reviews-summary">
+            <div class="pdp-reviews-average">
+              <span class="pdp-reviews-score">4.5</span>
+              <div class="pdp-reviews-stars">
+                {% for i in "12345" %}
+                  <span class="material-symbols-rounded filled">star</span>
+                {% endfor %}
+              </div>
+              <span class="pdp-reviews-total">Based on {{ product.reviews.all|length }} reviews</span>
+            </div>
+          </div>
+          
+          <div class="pdp-reviews-list">
+            {% for review in product.reviews.all %}
+            <div class="pdp-review-item">
+              <div class="pdp-review-header">
+                <div class="pdp-review-rating">
+                  {% for i in "12345" %}
+                    <span class="material-symbols-rounded{% if forloop.counter <= review.rating %} filled{% endif %}">star</span>
+                  {% endfor %}
+                </div>
+                <div class="pdp-review-meta">
+                  <span class="pdp-review-author">{{ review.user_email|truncatechars:20 }}</span>
+                  {% if review.verified_purchase %}
+                  <span class="pdp-review-verified">
+                    <span class="material-symbols-rounded">verified</span>
+                    Verified Purchase
+                  </span>
+                  {% endif %}
+                  <span class="pdp-review-date">{{ review.created_at|date:"M d, Y" }}</span>
+                </div>
+              </div>
+              <p class="pdp-review-comment">{{ review.comment }}</p>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="pdp-reviews-empty">
+            <span class="material-symbols-rounded">rate_review</span>
+            <h3>No reviews yet</h3>
+            <p>Be the first to review this product!</p>
+          </div>
+          {% endif %}
+        </div>
+        
+        <!-- Certifications Tab -->
+        <div class="pdp-tab-panel" id="tab-certifications">
+          <h2 class="pdp-tab-title">Certifications & Compliance</h2>
+          <div class="pdp-certifications">
+            <div class="pdp-cert-item">
+              <div class="pdp-cert-icon">
+                <span class="material-symbols-rounded">eco</span>
+              </div>
+              <h3>FSC Certified</h3>
+              <p>Our products are made from responsibly sourced materials certified by the Forest Stewardship Council.</p>
+            </div>
+            
+            <div class="pdp-cert-item">
+              <div class="pdp-cert-icon">
+                <span class="material-symbols-rounded">recycling</span>
+              </div>
+              <h3>100% Recyclable</h3>
+              <p>All materials used are fully recyclable and biodegradable, supporting circular economy principles.</p>
+            </div>
+            
+            <div class="pdp-cert-item">
+              <div class="pdp-cert-icon">
+                <span class="material-symbols-rounded">health_and_safety</span>
+              </div>
+              <h3>Food Safe</h3>
+              <p>FDA approved for direct food contact. Safe for restaurants, bakeries, and food service businesses.</p>
+            </div>
+            
+            <div class="pdp-cert-item">
+              <div class="pdp-cert-icon">
+                <span class="material-symbols-rounded">verified</span>
+              </div>
+              <h3>Quality Tested</h3>
+              <p>Each batch undergoes rigorous quality control testing to ensure consistency and durability.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Similar Products Carousel -->
+    {% if related_products %}
+    <div class="pdp-similar-section">
+      <h2 class="pdp-similar-title">Similar Products You May Like</h2>
+      <div class="pdp-similar-carousel">
+        {% for related in related_products %}
+        <article class="pdp-similar-card">
+          <a href="/products/{{ related.id }}/" class="pdp-similar-link">
+            <div class="pdp-similar-image">
+              {% if related.images.first %}
+              <img src="{{ related.images.first.image.url }}" alt="{{ related.name }}">
+              {% else %}
+              <div class="pdp-similar-placeholder">
+                <span class="material-symbols-rounded">shopping_bag</span>
+              </div>
+              {% endif %}
+            </div>
+            <div class="pdp-similar-info">
+              <h3 class="pdp-similar-name">{{ related.name }}</h3>
+              <div class="pdp-similar-price">${{ related.retail_price }}</div>
+              {% if related.pricing_tiers.first %}
+              <div class="pdp-similar-bulk">From ${{ related.pricing_tiers.first.wholesale_price }}/unit (bulk)</div>
+              {% endif %}
+            </div>
+          </a>
+        </article>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+    
+    <!-- B2B Custom Quote CTA -->
+    <div class="pdp-b2b-cta">
+      <div class="pdp-b2b-content">
+        <div class="pdp-b2b-icon">
+          <span class="material-symbols-rounded">work</span>
+        </div>
+        <div class="pdp-b2b-text">
+          <h3>Need a Custom Solution?</h3>
+          <p>For large orders over 5,000 units, custom sizes, or special requirements, contact our B2B team for personalized pricing and support.</p>
+        </div>
+        <button class="pdp-btn pdp-btn-primary pdp-b2b-btn">
+          <span class="material-symbols-rounded">request_quote</span>
+          Request B2B Quote
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+// Product Detail Page JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Image Gallery - Thumbnail Switching
+  const thumbs = document.querySelectorAll('.pdp-gallery-thumb');
+  const mainImg = document.getElementById('pdp-main-image');
+  
+  thumbs.forEach(thumb => {
+    thumb.addEventListener('click', function() {
+      const imageUrl = this.dataset.imageUrl;
+      const imageAlt = this.dataset.imageAlt;
+      
+      mainImg.src = imageUrl;
+      mainImg.alt = imageAlt;
+      
+      thumbs.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+  
+  // Zoom Functionality
+  const zoomToggle = document.getElementById('pdp-zoom-toggle');
+  const mainGallery = document.querySelector('.pdp-gallery-main-image');
+  
+  if (zoomToggle && mainGallery) {
+    zoomToggle.addEventListener('click', function() {
+      mainGallery.classList.toggle('zoomed');
+      const icon = this.querySelector('.material-symbols-rounded');
+      icon.textContent = mainGallery.classList.contains('zoomed') ? 'zoom_out' : 'zoom_in';
+    });
+  }
+  
+  // Quantity Controls with Dynamic Pricing
+  const qtyInput = document.getElementById('pdp-qty-input');
+  const qtyMinus = document.getElementById('pdp-qty-minus');
+  const qtyPlus = document.getElementById('pdp-qty-plus');
+  
+  // Pricing elements
+  const priceLabel = document.getElementById('pdp-price-label');
+  const currentPrice = document.getElementById('pdp-current-price');
+  const priceUnit = document.getElementById('pdp-price-unit');
+  const totalWrapper = document.getElementById('pdp-total-wrapper');
+  const totalPrice = document.getElementById('pdp-total-price');
+  const savingsInfo = document.getElementById('pdp-savings-info');
+  const savingsText = document.getElementById('pdp-savings-text');
+  
+  // Base retail price
+  const retailPrice = parseFloat('{{ product.retail_price }}');
+  
+  // Calculate and display bulk pricing savings percentages
+  document.querySelectorAll('.pdp-bulk-savings-badge').forEach(badge => {
+    const wholesale = parseFloat(badge.dataset.wholesale);
+    const retail = parseFloat(badge.dataset.retail);
+    if (retail > 0 && wholesale < retail) {
+      const savings = Math.round(((retail - wholesale) / retail) * 100);
+      if (savings > 0) {
+        badge.textContent = 'Save ' + savings + '%';
+      } else {
+        badge.style.display = 'none';
+      }
+    } else {
+      badge.style.display = 'none';
+    }
+  });
+
+  // Pricing tiers data
+  const pricingTiers = [
+    {% for tier in product.pricing_tiers.all %}
+    {
+      minQty: {{ tier.min_qty }},
+      maxQty: {{ tier.max_qty }},
+      price: parseFloat('{{ tier.wholesale_price }}')
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ];
+  
+  // Function to get applicable price based on quantity
+  function getApplicablePrice(qty) {
+    // Check if quantity falls into any bulk pricing tier
+    for (let tier of pricingTiers) {
+      if (qty >= tier.minQty && (tier.maxQty >= qty || tier.maxQty >= 9999)) {
+        return {
+          unitPrice: tier.price,
+          isBulk: true,
+          tierMin: tier.minQty,
+          tierMax: tier.maxQty
+        };
+      }
+    }
+    // Return retail price if no tier matches
+    return {
+      unitPrice: retailPrice,
+      isBulk: false
+    };
+  }
+  
+  // Function to update pricing display
+  function updatePricing() {
+    const qty = parseInt(qtyInput.value) || 1;
+    const priceInfo = getApplicablePrice(qty);
+    const unitPrice = priceInfo.unitPrice;
+    const total = (unitPrice * qty).toFixed(2);
+    const retailTotal = (retailPrice * qty).toFixed(2);
+    const savings = (retailTotal - total).toFixed(2);
+    
+    // Update current unit price
+    currentPrice.textContent = '$' + unitPrice.toFixed(2);
+    
+    // Update labels and show/hide elements based on pricing type
+    if (priceInfo.isBulk) {
+      priceLabel.textContent = 'Bulk Price (B2B)';
+      priceLabel.style.color = 'var(--primary-color)';
+      currentPrice.style.color = 'var(--primary-color)';
+      
+      // Show total price
+      totalWrapper.style.display = 'flex';
+      totalPrice.textContent = '$' + total;
+      
+      // Show savings if any
+      if (parseFloat(savings) > 0) {
+        savingsInfo.style.display = 'flex';
+        savingsText.textContent = `You save $${savings} with bulk pricing!`;
+      } else {
+        savingsInfo.style.display = 'none';
+      }
+      
+      // Highlight active tier
+      document.querySelectorAll('.pdp-bulk-row').forEach(row => {
+        const tierMin = parseInt(row.dataset.tierMin);
+        const tierMax = parseInt(row.dataset.tierMax);
+        if (qty >= tierMin && (tierMax >= qty || tierMax >= 9999)) {
+          row.classList.add('active-tier');
+        } else {
+          row.classList.remove('active-tier');
+        }
+      });
+    } else {
+      priceLabel.textContent = 'Retail Price (B2C)';
+      priceLabel.style.color = '#666';
+      currentPrice.style.color = '#1a1a1a';
+      
+      // Show total for retail too
+      totalWrapper.style.display = 'flex';
+      totalPrice.textContent = '$' + total;
+      
+      savingsInfo.style.display = 'none';
+      
+      // Remove all tier highlights
+      document.querySelectorAll('.pdp-bulk-row').forEach(row => {
+        row.classList.remove('active-tier');
+      });
+    }
+  }
+  
+  if (qtyMinus && qtyPlus && qtyInput) {
+    const minQty = parseInt(qtyInput.min) || 1;
+    const maxQty = parseInt(qtyInput.max) || 9999;
+    const step = parseInt(qtyInput.step) || 1;
+    
+    // Initial pricing update
+    updatePricing();
+    
+    qtyMinus.addEventListener('click', function() {
+      let currentVal = parseInt(qtyInput.value) || minQty;
+      if (currentVal > minQty) {
+        qtyInput.value = Math.max(minQty, currentVal - step);
+        updatePricing();
+      }
+    });
+    
+    qtyPlus.addEventListener('click', function() {
+      let currentVal = parseInt(qtyInput.value) || minQty;
+      if (currentVal < maxQty) {
+        qtyInput.value = Math.min(maxQty, currentVal + step);
+        updatePricing();
+      }
+    });
+    
+    // Update pricing when user manually types quantity
+    qtyInput.addEventListener('input', function() {
+      updatePricing();
+    });
+    
+    qtyInput.addEventListener('change', function() {
+      updatePricing();
+    });
+  }
+  
+  // Tabs Functionality
+  const tabBtns = document.querySelectorAll('.pdp-tab-btn');
+  const tabPanels = document.querySelectorAll('.pdp-tab-panel');
+  
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const tabName = this.dataset.tab;
+      
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabPanels.forEach(p => p.classList.remove('active'));
+      
+      this.classList.add('active');
+      document.getElementById('tab-' + tabName).classList.add('active');
+    });
+  });
+  
+  // Sticky Info Column (on scroll)
+  const infoSticky = document.querySelector('.pdp-info-sticky');
+  if (infoSticky) {
+    window.addEventListener('scroll', function() {
+      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+      if (scrollTop > 200) {
+        infoSticky.classList.add('is-sticky');
+      } else {
+        infoSticky.classList.remove('is-sticky');
+      }
+    });
+  }
+  
+  // Review System - Check eligibility and handle form
+  const productId = {{ product.id }};
+  const reviewContainer = document.getElementById('review-form-container');
+  
+  async function checkReviewEligibility() {
+    try {
+      const response = await fetch(`/api/products/${productId}/review-eligibility/`);
+      const data = await response.json();
+      
+      if (data.can_review) {
+        // User has purchased this product - show review form
+        reviewContainer.innerHTML = `
+          <div class="pdp-review-form">
+            <h3 class="pdp-review-form-title">
+              <span class="material-symbols-rounded">edit_note</span>
+              Write Your Review
+            </h3>
+            <p class="pdp-review-form-subtitle">Share your experience with this product</p>
+            
+            <form id="submit-review-form" class="pdp-review-form-fields">
+              <div class="pdp-form-group">
+                <label class="pdp-form-label">Your Rating</label>
+                <div class="pdp-star-rating" id="star-rating-input">
+                  ${[1,2,3,4,5].map(i => `
+                    <button type="button" class="pdp-star-btn" data-rating="${i}" aria-label="Rate ${i} stars">
+                      <span class="material-symbols-rounded">star</span>
+                    </button>
+                  `).join('')}
+                </div>
+                <input type="hidden" name="rating" id="rating-value" value="0" required>
+              </div>
+              
+              <div class="pdp-form-group">
+                <label for="review-comment" class="pdp-form-label">Your Review</label>
+                <textarea 
+                  id="review-comment" 
+                  name="comment" 
+                  class="pdp-form-textarea" 
+                  rows="4" 
+                  placeholder="Tell others what you think about this product..."
+                  required
+                ></textarea>
+              </div>
+              
+              <button type="submit" class="pdp-btn pdp-btn-primary pdp-review-submit-btn">
+                <span class="material-symbols-rounded">send</span>
+                Submit Review
+              </button>
+            </form>
+            
+            <div class="pdp-review-success" id="review-success" style="display: none;">
+              <span class="material-symbols-rounded">check_circle</span>
+              <h4>Thank you for your review!</h4>
+              <p>Your review has been submitted successfully.</p>
+            </div>
+          </div>
+        `;
+        
+        // Initialize star rating
+        initStarRating();
+        
+        // Handle form submission
+        document.getElementById('submit-review-form').addEventListener('submit', submitReview);
+        
+      } else if (data.already_reviewed) {
+        // User already reviewed this product
+        reviewContainer.innerHTML = `
+          <div class="pdp-review-notice pdp-review-notice--info">
+            <span class="material-symbols-rounded">task_alt</span>
+            <div>
+              <h4>You've already reviewed this product</h4>
+              <p>Thank you for sharing your experience!</p>
+            </div>
+          </div>
+        `;
+      } else {
+        // User hasn't purchased this product
+        reviewContainer.innerHTML = `
+          <div class="pdp-review-notice pdp-review-notice--locked">
+            <span class="material-symbols-rounded">lock</span>
+            <div>
+              <h4>Purchase Required</h4>
+              <p>Only customers who have purchased this product can write a review. Order this product to share your experience!</p>
+            </div>
+          </div>
+        `;
+      }
+    } catch (error) {
+      console.error('Error checking review eligibility:', error);
+      reviewContainer.innerHTML = `
+        <div class="pdp-review-notice pdp-review-notice--locked">
+          <span class="material-symbols-rounded">lock</span>
+          <div>
+            <h4>Purchase Required</h4>
+            <p>Only verified purchasers can write reviews. Log in and purchase this product to leave a review.</p>
+          </div>
+        </div>
+      `;
+    }
+  }
+  
+  function initStarRating() {
+    const starBtns = document.querySelectorAll('.pdp-star-btn');
+    const ratingInput = document.getElementById('rating-value');
+    
+    starBtns.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const rating = parseInt(this.dataset.rating);
+        ratingInput.value = rating;
+        
+        starBtns.forEach((b, index) => {
+          if (index < rating) {
+            b.classList.add('active');
+            b.querySelector('.material-symbols-rounded').classList.add('filled');
+          } else {
+            b.classList.remove('active');
+            b.querySelector('.material-symbols-rounded').classList.remove('filled');
+          }
+        });
+      });
+      
+      btn.addEventListener('mouseenter', function() {
+        const rating = parseInt(this.dataset.rating);
+        starBtns.forEach((b, index) => {
+          if (index < rating) {
+            b.classList.add('hover');
+          } else {
+            b.classList.remove('hover');
+          }
+        });
+      });
+    });
+    
+    document.getElementById('star-rating-input').addEventListener('mouseleave', function() {
+      document.querySelectorAll('.pdp-star-btn').forEach(b => b.classList.remove('hover'));
+    });
+  }
+  
+  async function submitReview(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const rating = document.getElementById('rating-value').value;
+    const comment = document.getElementById('review-comment').value;
+    
+    if (!rating || rating === '0') {
+      alert('Please select a rating');
+      return;
+    }
+    
+    const submitBtn = form.querySelector('.pdp-review-submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="material-symbols-rounded">hourglass_empty</span> Submitting...';
+    
+    try {
+      const response = await fetch(`/api/products/${productId}/reviews/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ rating: parseInt(rating), comment })
+      });
+      
+      if (response.ok) {
+        form.style.display = 'none';
+        document.getElementById('review-success').style.display = 'flex';
+        
+        // Reload page after 2 seconds to show the new review
+        setTimeout(() => location.reload(), 2000);
+      } else {
+        const error = await response.json();
+        alert(error.error || 'Failed to submit review. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Submit Review';
+      }
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      alert('Failed to submit review. Please try again.');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span class="material-symbols-rounded">send</span> Submit Review';
+    }
+  }
+  
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+  
+  // Initialize review system
+  checkReviewEligibility();
+});
+</script>
+{% endblock %}

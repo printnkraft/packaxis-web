@@ -1,0 +1,596 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if selected_category %}{{ selected_category|title }} Articles{% else %}Blog{% endif %} | Packaging Insights - PackAxis{% endblock %}
+
+{% block extra_head %}
+<!-- SEO Meta Tags -->
+<meta name="description" content="Explore the PackAxis blog for expert insights on sustainable packaging, eco-friendly solutions, industry trends, and tips for businesses transitioning to green packaging.">
+<meta name="keywords" content="sustainable packaging blog, eco-friendly packaging, packaging industry news, green packaging tips, PackAxis insights">
+<link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+<!-- Open Graph -->
+<meta property="og:title" content="PackAxis Blog - Sustainable Packaging Insights">
+<meta property="og:description" content="Expert insights on sustainable packaging, eco-friendly solutions, and industry trends.">
+<meta property="og:type" content="blog">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+
+<!-- Schema.org Blog Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Blog",
+  "name": "PackAxis Blog",
+  "description": "Expert insights on sustainable packaging solutions",
+  "url": "{{ request.build_absolute_uri }}",
+  "publisher": {
+    "@type": "Organization",
+    "name": "PackAxis"
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<nav class="breadcrumb-nav" aria-label="Breadcrumb">
+  <div class="container">
+    <ol class="breadcrumb-list">
+      <li class="breadcrumb-item">
+        <a href="{% url 'home' %}" class="breadcrumb-link">Home</a>
+      </li>
+      <li class="breadcrumb-separator" aria-hidden="true">
+        <span class="material-symbols-rounded">chevron_right</span>
+      </li>
+      <li class="breadcrumb-item breadcrumb-item--current">
+        <span aria-current="page">Blog</span>
+      </li>
+    </ol>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="blg-hero">
+  <div class="container">
+    <div class="blg-hero__content">
+      <span class="blg-hero__badge">
+        <span class="material-symbols-rounded">article</span>
+        Insights & Updates
+      </span>
+      <h1 class="blg-hero__title">The Packaging Journal</h1>
+      <p class="blg-hero__subtitle">Stay informed with the latest trends, tips, and insights in sustainable packaging</p>
+    </div>
+  </div>
+  <div class="blg-hero__pattern"></div>
+</section>
+
+<!-- Main Content -->
+<section class="blg-section">
+  <div class="container">
+    <!-- Search & Filter Bar -->
+    <div class="blg-toolbar">
+      <div class="blg-search" role="search">
+        <div class="blg-search__wrapper">
+          <span class="material-symbols-rounded blg-search__icon">search</span>
+          <input 
+            type="search" 
+            id="blog-search-input"
+            name="q" 
+            placeholder="Search articles..." 
+            value="{{ search_query|default:'' }}" 
+            class="blg-search__input"
+            autocomplete="off"
+            aria-label="Search blog posts"
+          >
+          <button type="button" id="blog-search-clear" class="blg-search__clear" aria-label="Clear search" style="display: none;">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+        <div class="blg-search__hint">Press Enter to search, Escape to clear</div>
+      </div>
+      
+      <div class="blg-filters">
+        <span class="blg-filters__label">Categories:</span>
+        <div class="blg-filters__list">
+          <button type="button" class="blg-filter-btn {% if not selected_category %}blg-filter-btn--active{% endif %}" data-category="">
+            All
+          </button>
+          {% for category in categories %}
+          <button type="button" class="blg-filter-btn {% if selected_category == category.slug %}blg-filter-btn--active{% endif %}" data-category="{{ category.slug }}">
+            {{ category.name }}
+          </button>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Results Info -->
+    <div id="blog-search-info" class="blg-search-info" style="display: none;">
+      <div class="blg-search-info__content">
+        <span class="material-symbols-rounded">search</span>
+        <span>Showing results for "<strong id="search-query-display"></strong>"</span>
+        <span class="blg-search-info__count">(<span id="search-results-count">0</span> articles found)</span>
+      </div>
+      <button type="button" id="clear-search-btn" class="blg-search-info__clear">
+        <span class="material-symbols-rounded">close</span>
+        Clear
+      </button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="blog-loading" class="blg-loading" style="display: none;">
+      <div class="blg-loading__spinner"></div>
+      <span class="blg-loading__text">Searching articles...</span>
+    </div>
+
+    <!-- Blog Grid -->
+    <div class="blg-grid" id="blog-grid">
+      {% for post in page_obj %}
+      <article class="blg-card" data-aos="fade-up">
+        {% if post.featured_image %}
+        <a href="{{ post.get_absolute_url }}" class="blg-card__image">
+          <img src="{{ post.featured_image.url }}" alt="{{ post.title }}" loading="lazy">
+          <div class="blg-card__overlay"></div>
+        </a>
+        {% else %}
+        <a href="{{ post.get_absolute_url }}" class="blg-card__image blg-card__image--placeholder">
+          <span class="material-symbols-rounded">image</span>
+        </a>
+        {% endif %}
+        
+        <div class="blg-card__body">
+          {% if post.category %}
+          <a href="{% url 'content:blog_list' %}?category={{ post.category.slug }}" class="blg-card__category">
+            {{ post.category.name }}
+          </a>
+          {% endif %}
+          
+          <h2 class="blg-card__title">
+            <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+          </h2>
+          
+          <p class="blg-card__excerpt">{{ post.excerpt|truncatewords:20 }}</p>
+          
+          <div class="blg-card__footer">
+            <div class="blg-card__meta">
+              <span class="blg-card__author">
+                <span class="material-symbols-rounded">person</span>
+                {{ post.author.get_full_name|default:post.author.username }}
+              </span>
+              <time class="blg-card__date" datetime="{{ post.published_at|date:'c' }}">
+                <span class="material-symbols-rounded">calendar_today</span>
+                {{ post.published_at|date:"M d, Y" }}
+              </time>
+            </div>
+            <a href="{{ post.get_absolute_url }}" class="blg-card__link" aria-label="Read more about {{ post.title }}">
+              Read More
+              <span class="material-symbols-rounded">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+      </article>
+      {% empty %}
+      <div class="blg-empty" id="blog-empty">
+        <span class="material-symbols-rounded blg-empty__icon">article</span>
+        <h3 class="blg-empty__title">No Articles Found</h3>
+        <p class="blg-empty__text">
+          {% if search_query %}
+          We couldn't find any articles matching "{{ search_query }}". Try a different search term.
+          {% else %}
+          There are no blog posts available at the moment. Check back soon!
+          {% endif %}
+        </p>
+        {% if search_query %}
+        <a href="{% url 'content:blog_list' %}" class="btn btn-primary">View All Articles</a>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if paginator.num_pages > 1 %}
+    <nav class="pagination" id="blog-pagination" aria-label="Blog pagination">
+      <div class="pagination__info">
+        Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ total_posts }} articles
+      </div>
+      <ul class="pagination__list">
+        <!-- Previous Page -->
+        {% if page_obj.has_previous %}
+        <li>
+          <a href="?page={{ page_obj.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" 
+             class="pagination__link pagination__link--prev" 
+             aria-label="Go to previous page"
+             data-page="{{ page_obj.previous_page_number }}">
+            <span class="material-symbols-rounded">chevron_left</span>
+          </a>
+        </li>
+        {% else %}
+        <li>
+          <span class="pagination__link pagination__link--prev pagination__link--disabled" aria-disabled="true">
+            <span class="material-symbols-rounded">chevron_left</span>
+          </span>
+        </li>
+        {% endif %}
+        
+        <!-- First page if not in range -->
+        {% if page_range.0 > 1 %}
+        <li>
+          <a href="?page=1{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" 
+             class="pagination__link" data-page="1">1</a>
+        </li>
+        {% if page_range.0 > 2 %}
+        <li><span class="pagination__ellipsis">…</span></li>
+        {% endif %}
+        {% endif %}
+        
+        <!-- Page Numbers -->
+        {% for page_num in page_range %}
+        <li>
+          {% if page_num == page_obj.number %}
+          <span class="pagination__link pagination__link--active" aria-current="page">{{ page_num }}</span>
+          {% else %}
+          <a href="?page={{ page_num }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" 
+             class="pagination__link" data-page="{{ page_num }}">{{ page_num }}</a>
+          {% endif %}
+        </li>
+        {% endfor %}
+        
+        <!-- Last page if not in range -->
+        {% if page_range|last < paginator.num_pages %}
+        {% if page_range|last < paginator.num_pages|add:"-1" %}
+        <li><span class="pagination__ellipsis">…</span></li>
+        {% endif %}
+        <li>
+          <a href="?page={{ paginator.num_pages }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" 
+             class="pagination__link" data-page="{{ paginator.num_pages }}">{{ paginator.num_pages }}</a>
+        </li>
+        {% endif %}
+        
+        <!-- Next Page -->
+        {% if page_obj.has_next %}
+        <li>
+          <a href="?page={{ page_obj.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if search_query %}&q={{ search_query }}{% endif %}" 
+             class="pagination__link pagination__link--next" 
+             aria-label="Go to next page"
+             data-page="{{ page_obj.next_page_number }}">
+            <span class="material-symbols-rounded">chevron_right</span>
+          </a>
+        </li>
+        {% else %}
+        <li>
+          <span class="pagination__link pagination__link--next pagination__link--disabled" aria-disabled="true">
+            <span class="material-symbols-rounded">chevron_right</span>
+          </span>
+        </li>
+        {% endif %}
+      </ul>
+    </nav>
+    {% endif %}
+  </div>
+</section>
+
+<script>
+(function() {
+  'use strict';
+
+  // State
+  let searchTimeout = null;
+  let currentCategory = '{{ selected_category|default:"" }}';
+  let currentQuery = '{{ search_query|default:"" }}';
+  let currentPage = {{ page_obj.number|default:1 }};
+
+  // DOM Elements
+  const searchInput = document.getElementById('blog-search-input');
+  const searchClear = document.getElementById('blog-search-clear');
+  const searchInfo = document.getElementById('blog-search-info');
+  const searchQueryDisplay = document.getElementById('search-query-display');
+  const searchResultsCount = document.getElementById('search-results-count');
+  const clearSearchBtn = document.getElementById('clear-search-btn');
+  const loadingOverlay = document.getElementById('blog-loading');
+  const blogGrid = document.getElementById('blog-grid');
+  const pagination = document.getElementById('blog-pagination');
+  const filterBtns = document.querySelectorAll('.blg-filter-btn');
+
+  // Utility: Highlight search terms
+  function highlightText(text, query) {
+    if (!query || !text) return text;
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return text.replace(regex, '<mark class="blg-highlight">$1</mark>');
+  }
+
+  // Utility: Update URL without reload
+  function updateURL(params) {
+    const url = new URL(window.location);
+    Object.keys(params).forEach(key => {
+      if (params[key]) {
+        url.searchParams.set(key, params[key]);
+      } else {
+        url.searchParams.delete(key);
+      }
+    });
+    window.history.pushState({}, '', url);
+  }
+
+  // Render blog cards
+  function renderBlogCards(posts, query) {
+    if (posts.length === 0) {
+      blogGrid.innerHTML = `
+        <div class="blg-empty">
+          <span class="material-symbols-rounded blg-empty__icon">search_off</span>
+          <h3 class="blg-empty__title">No Articles Found</h3>
+          <p class="blg-empty__text">
+            ${query ? `We couldn't find any articles matching "${query}". Try a different search term.` : 'No articles available in this category.'}
+          </p>
+          ${query ? '<button type="button" class="btn btn-primary" onclick="clearSearch()">View All Articles</button>' : ''}
+        </div>
+      `;
+      return;
+    }
+
+    blogGrid.innerHTML = posts.map((post, index) => `
+      <article class="blg-card blg-card--animate" style="animation-delay: ${index * 0.05}s">
+        ${post.featured_image ? `
+          <a href="${post.url}" class="blg-card__image">
+            <img src="${post.featured_image}" alt="${post.title}" loading="lazy">
+            <div class="blg-card__overlay"></div>
+          </a>
+        ` : `
+          <a href="${post.url}" class="blg-card__image blg-card__image--placeholder">
+            <span class="material-symbols-rounded">image</span>
+          </a>
+        `}
+        
+        <div class="blg-card__body">
+          ${post.category ? `
+            <a href="/blog/?category=${post.category.slug}" class="blg-card__category" data-category="${post.category.slug}">
+              ${post.category.name}
+            </a>
+          ` : ''}
+          
+          <h2 class="blg-card__title">
+            <a href="${post.url}">${highlightText(post.title, query)}</a>
+          </h2>
+          
+          <p class="blg-card__excerpt">${highlightText(post.excerpt, query)}</p>
+          
+          <div class="blg-card__footer">
+            <div class="blg-card__meta">
+              <span class="blg-card__author">
+                <span class="material-symbols-rounded">person</span>
+                ${post.author.name}
+              </span>
+              <time class="blg-card__date" datetime="${post.published_at_iso}">
+                <span class="material-symbols-rounded">calendar_today</span>
+                ${post.published_at}
+              </time>
+            </div>
+            <a href="${post.url}" class="blg-card__link" aria-label="Read more about ${post.title}">
+              Read More
+              <span class="material-symbols-rounded">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+      </article>
+    `).join('');
+  }
+
+  // Render pagination
+  function renderPagination(paginationData) {
+    if (!pagination || paginationData.total_pages <= 1) {
+      if (pagination) pagination.style.display = 'none';
+      return;
+    }
+
+    pagination.style.display = 'flex';
+    const { has_previous, has_next, current_page, total_pages, total_posts, start_index, end_index, previous_page, next_page, page_range } = paginationData;
+
+    let pagesHtml = '';
+    
+    // First page if not in range
+    if (page_range[0] > 1) {
+      pagesHtml += `<li><a href="#" class="pagination__link" data-page="1">1</a></li>`;
+      if (page_range[0] > 2) {
+        pagesHtml += `<li><span class="pagination__ellipsis">…</span></li>`;
+      }
+    }
+
+    // Page range
+    page_range.forEach(num => {
+      if (num === current_page) {
+        pagesHtml += `<li><span class="pagination__link pagination__link--active" aria-current="page">${num}</span></li>`;
+      } else {
+        pagesHtml += `<li><a href="#" class="pagination__link" data-page="${num}">${num}</a></li>`;
+      }
+    });
+
+    // Last page if not in range
+    if (page_range[page_range.length - 1] < total_pages) {
+      if (page_range[page_range.length - 1] < total_pages - 1) {
+        pagesHtml += `<li><span class="pagination__ellipsis">…</span></li>`;
+      }
+      pagesHtml += `<li><a href="#" class="pagination__link" data-page="${total_pages}">${total_pages}</a></li>`;
+    }
+
+    pagination.innerHTML = `
+      <div class="pagination__info">
+        Showing ${start_index}-${end_index} of ${total_posts} articles
+      </div>
+      <ul class="pagination__list">
+        <li>
+          ${has_previous 
+            ? `<a href="#" class="pagination__link pagination__link--prev" data-page="${previous_page}" aria-label="Go to previous page"><span class="material-symbols-rounded">chevron_left</span></a>`
+            : `<span class="pagination__link pagination__link--prev pagination__link--disabled" aria-disabled="true"><span class="material-symbols-rounded">chevron_left</span></span>`
+          }
+        </li>
+        ${pagesHtml}
+        <li>
+          ${has_next 
+            ? `<a href="#" class="pagination__link pagination__link--next" data-page="${next_page}" aria-label="Go to next page"><span class="material-symbols-rounded">chevron_right</span></a>`
+            : `<span class="pagination__link pagination__link--next pagination__link--disabled" aria-disabled="true"><span class="material-symbols-rounded">chevron_right</span></span>`
+          }
+        </li>
+      </ul>
+    `;
+
+    // Re-attach pagination click handlers
+    pagination.querySelectorAll('[data-page]').forEach(link => {
+      link.addEventListener('click', handlePaginationClick);
+    });
+  }
+
+  // Fetch blog posts via AJAX
+  async function fetchBlogPosts(query = '', category = '', page = 1) {
+    loadingOverlay.style.display = 'flex';
+    
+    try {
+      const params = new URLSearchParams();
+      if (query) params.set('q', query);
+      if (category) params.set('category', category);
+      if (page > 1) params.set('page', page);
+
+      const response = await fetch(`/blog/search/?${params.toString()}`);
+      const data = await response.json();
+
+      if (data.success) {
+        renderBlogCards(data.posts, query);
+        renderPagination(data.pagination);
+
+        // Update search info
+        if (query) {
+          searchInfo.style.display = 'flex';
+          searchQueryDisplay.textContent = query;
+          searchResultsCount.textContent = data.pagination.total_posts;
+        } else {
+          searchInfo.style.display = 'none';
+        }
+
+        // Update URL
+        updateURL({ q: query, category: category, page: page > 1 ? page : null });
+      }
+    } catch (error) {
+      console.error('Error fetching blog posts:', error);
+    } finally {
+      loadingOverlay.style.display = 'none';
+    }
+  }
+
+  // Handle search input
+  function handleSearchInput(e) {
+    const query = e.target.value.trim();
+    
+    // Show/hide clear button
+    searchClear.style.display = query ? 'flex' : 'none';
+
+    // Debounce search
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      currentQuery = query;
+      currentPage = 1;
+      fetchBlogPosts(query, currentCategory, 1);
+    }, 300);
+  }
+
+  // Handle search keydown
+  function handleSearchKeydown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      clearTimeout(searchTimeout);
+      currentQuery = searchInput.value.trim();
+      currentPage = 1;
+      fetchBlogPosts(currentQuery, currentCategory, 1);
+    } else if (e.key === 'Escape') {
+      clearSearch();
+    }
+  }
+
+  // Clear search
+  function clearSearch() {
+    searchInput.value = '';
+    searchClear.style.display = 'none';
+    currentQuery = '';
+    currentPage = 1;
+    fetchBlogPosts('', currentCategory, 1);
+  }
+  window.clearSearch = clearSearch; // Make accessible globally
+
+  // Handle category filter click
+  function handleCategoryClick(e) {
+    const btn = e.target.closest('.blg-filter-btn');
+    if (!btn) return;
+
+    // Update active state
+    filterBtns.forEach(b => b.classList.remove('blg-filter-btn--active'));
+    btn.classList.add('blg-filter-btn--active');
+
+    currentCategory = btn.dataset.category || '';
+    currentPage = 1;
+    fetchBlogPosts(currentQuery, currentCategory, 1);
+  }
+
+  // Handle pagination click
+  function handlePaginationClick(e) {
+    e.preventDefault();
+    const link = e.target.closest('[data-page]');
+    if (!link) return;
+
+    currentPage = parseInt(link.dataset.page, 10);
+    fetchBlogPosts(currentQuery, currentCategory, currentPage);
+  }
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', function() {
+    // Search input events
+    if (searchInput) {
+      searchInput.addEventListener('input', handleSearchInput);
+      searchInput.addEventListener('keydown', handleSearchKeydown);
+      
+      // Show clear button if there's initial value
+      if (searchInput.value.trim()) {
+        searchClear.style.display = 'flex';
+        searchInfo.style.display = 'flex';
+        searchQueryDisplay.textContent = searchInput.value.trim();
+      }
+    }
+
+    // Clear button events
+    if (searchClear) {
+      searchClear.addEventListener('click', clearSearch);
+    }
+
+    if (clearSearchBtn) {
+      clearSearchBtn.addEventListener('click', clearSearch);
+    }
+
+    // Category filter events
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', handleCategoryClick);
+    });
+
+    // Pagination events (for initial server-rendered pagination)
+    if (pagination) {
+      pagination.querySelectorAll('[data-page]').forEach(link => {
+        link.addEventListener('click', handlePaginationClick);
+      });
+    }
+
+    // Handle category links inside cards
+    blogGrid.addEventListener('click', function(e) {
+      const categoryLink = e.target.closest('.blg-card__category');
+      if (categoryLink) {
+        e.preventDefault();
+        const category = categoryLink.dataset.category;
+        
+        // Update filter button state
+        filterBtns.forEach(btn => {
+          btn.classList.toggle('blg-filter-btn--active', btn.dataset.category === category);
+        });
+        
+        currentCategory = category;
+        currentPage = 1;
+        fetchBlogPosts(currentQuery, currentCategory, 1);
+      }
+    });
+  });
+})();
+</script>
+{% endblock %}

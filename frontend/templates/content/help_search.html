@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if search_query %}Search Results for "{{ search_query }}"{% else %}Browse All Articles{% endif %} - Packaxis Help Center{% endblock %}
+
+{% block extra_head %}
+<meta name="description" content="Search results for help articles at Packaxis. Find answers to your packaging questions.">
+<meta name="robots" content="noindex, follow">
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<nav class="breadcrumb-nav" aria-label="Breadcrumb">
+  <div class="container">
+    <ol class="breadcrumb-list">
+      <li class="breadcrumb-item">
+        <a href="{% url 'home' %}" class="breadcrumb-link">Home</a>
+      </li>
+      <li class="breadcrumb-separator" aria-hidden="true">
+        <span class="material-symbols-rounded">chevron_right</span>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'content:help_center' %}" class="breadcrumb-link">Help Center</a>
+      </li>
+      <li class="breadcrumb-separator" aria-hidden="true">
+        <span class="material-symbols-rounded">chevron_right</span>
+      </li>
+      <li class="breadcrumb-item breadcrumb-item--current">
+        <span aria-current="page">{% if search_query %}Search Results{% else %}All Articles{% endif %}</span>
+      </li>
+    </ol>
+  </div>
+</nav>
+
+<!-- Search Header -->
+<section class="hc-search-header">
+  <div class="container">
+    <div class="hc-search-header__content">
+      {% if search_query %}
+      <h1 class="hc-search-header__title">
+        Search Results for "<span class="text-accent">{{ search_query }}</span>"
+      </h1>
+      <p class="hc-search-header__subtitle">
+        Found {{ total_results }} result{{ total_results|pluralize }}
+      </p>
+      {% else %}
+      <h1 class="hc-search-header__title">Browse All Articles</h1>
+      <p class="hc-search-header__subtitle">
+        {{ total_results }} article{{ total_results|pluralize }} available
+      </p>
+      {% endif %}
+    </div>
+    
+    <!-- Search Form -->
+    <div class="hc-search-header__form">
+      <form action="{% url 'content:help_search' %}" method="get" class="hc-inline-search">
+        <div class="hc-inline-search__wrapper">
+          <span class="material-symbols-rounded">search</span>
+          <input 
+            type="text" 
+            name="q" 
+            value="{{ search_query }}"
+            class="hc-inline-search__input" 
+            placeholder="Search articles..."
+          >
+          {% if selected_category %}
+          <input type="hidden" name="category" value="{{ selected_category }}">
+          {% endif %}
+          <button type="submit" class="hc-inline-search__btn">Search</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Search Results -->
+<section class="hc-search-results">
+  <div class="container">
+    <div class="hc-search-results__wrapper">
+      <!-- Filters Sidebar -->
+      <aside class="hc-search-filters">
+        <div class="hc-search-filters__header">
+          <h3>
+            <span class="material-symbols-rounded">filter_list</span>
+            Filter by Category
+          </h3>
+        </div>
+        
+        <div class="hc-search-filters__list">
+          <a href="{% url 'content:help_search' %}{% if search_query %}?q={{ search_query }}{% endif %}" 
+             class="hc-filter-item {% if not selected_category %}hc-filter-item--active{% endif %}">
+            <span>All Categories</span>
+            <span class="hc-filter-item__count">{{ total_results }}</span>
+          </a>
+          {% for cat in categories %}
+          <a href="{% url 'content:help_search' %}?category={{ cat.slug }}{% if search_query %}&q={{ search_query }}{% endif %}" 
+             class="hc-filter-item {% if selected_category == cat.slug %}hc-filter-item--active{% endif %}">
+            <span class="material-symbols-rounded" style="color: {{ cat.color }}">{{ cat.icon }}</span>
+            <span>{{ cat.name }}</span>
+            <span class="hc-filter-item__count">{{ cat.article_count }}</span>
+          </a>
+          {% endfor %}
+        </div>
+        
+        {% if search_query or selected_category %}
+        <div class="hc-search-filters__clear">
+          <a href="{% url 'content:help_search' %}" class="hc-clear-filters">
+            <span class="material-symbols-rounded">close</span>
+            Clear all filters
+          </a>
+        </div>
+        {% endif %}
+      </aside>
+      
+      <!-- Results List -->
+      <div class="hc-search-results__main">
+        {% if articles %}
+        <div class="hc-search-results__list">
+          {% for article in articles %}
+          <a href="{{ article.get_absolute_url }}" class="hc-search-result">
+            <div class="hc-search-result__icon">
+              <span class="material-symbols-rounded">{{ article.category.icon|default:'article' }}</span>
+            </div>
+            <div class="hc-search-result__content">
+              <div class="hc-search-result__header">
+                {% if article.category %}
+                <span class="hc-search-result__category" style="--category-color: {{ article.category.color }}">
+                  {{ article.category.name }}
+                </span>
+                {% endif %}
+                {% if article.is_popular %}
+                <span class="hc-search-result__badge">
+                  <span class="material-symbols-rounded">trending_up</span>
+                  Popular
+                </span>
+                {% endif %}
+              </div>
+              <h3 class="hc-search-result__title">{{ article.title }}</h3>
+              <p class="hc-search-result__excerpt">{{ article.excerpt }}</p>
+              <div class="hc-search-result__meta">
+                <span>
+                  <span class="material-symbols-rounded">schedule</span>
+                  {{ article.estimated_read_time }} min read
+                </span>
+                <span>
+                  <span class="material-symbols-rounded">visibility</span>
+                  {{ article.views_count }} views
+                </span>
+              </div>
+            </div>
+            <span class="hc-search-result__arrow">
+              <span class="material-symbols-rounded">chevron_right</span>
+            </span>
+          </a>
+          {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if articles.has_other_pages %}
+        <nav class="hc-pagination" aria-label="Search results pagination">
+          <div class="hc-pagination__info">
+            Showing {{ articles.start_index }}-{{ articles.end_index }} of {{ articles.paginator.count }} results
+          </div>
+          <div class="hc-pagination__controls">
+            {% if articles.has_previous %}
+            <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}page={{ articles.previous_page_number }}" class="hc-pagination__btn">
+              <span class="material-symbols-rounded">chevron_left</span>
+              Previous
+            </a>
+            {% endif %}
+            
+            <div class="hc-pagination__pages">
+              {% for num in articles.paginator.page_range %}
+              {% if articles.number == num %}
+              <span class="hc-pagination__page hc-pagination__page--active">{{ num }}</span>
+              {% elif num > articles.number|add:'-3' and num < articles.number|add:'3' %}
+              <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}page={{ num }}" class="hc-pagination__page">{{ num }}</a>
+              {% endif %}
+              {% endfor %}
+            </div>
+            
+            {% if articles.has_next %}
+            <a href="?{% if search_query %}q={{ search_query }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}page={{ articles.next_page_number }}" class="hc-pagination__btn">
+              Next
+              <span class="material-symbols-rounded">chevron_right</span>
+            </a>
+            {% endif %}
+          </div>
+        </nav>
+        {% endif %}
+        
+        {% else %}
+        <!-- No Results -->
+        <div class="hc-no-results">
+          <div class="hc-no-results__icon">
+            <span class="material-symbols-rounded">search_off</span>
+          </div>
+          <h2 class="hc-no-results__title">No Results Found</h2>
+          <p class="hc-no-results__text">
+            {% if search_query %}
+            We couldn't find any articles matching "<strong>{{ search_query }}</strong>".
+            {% else %}
+            No articles are available in this category.
+            {% endif %}
+          </p>
+          <div class="hc-no-results__suggestions">
+            <h3>Suggestions:</h3>
+            <ul>
+              <li>Check your spelling and try again</li>
+              <li>Try using different or more general keywords</li>
+              <li>Browse our categories to find related topics</li>
+            </ul>
+          </div>
+          <div class="hc-no-results__actions">
+            <a href="{% url 'content:help_center' %}" class="hc-no-results__btn hc-no-results__btn--primary">
+              <span class="material-symbols-rounded">home</span>
+              Back to Help Center
+            </a>
+            <a href="{% url 'content:contact' %}" class="hc-no-results__btn hc-no-results__btn--secondary">
+              <span class="material-symbols-rounded">mail</span>
+              Contact Support
+            </a>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Help Center JavaScript (deferred for performance) -->
+<script src="{% static 'js/help-center.js' %}" defer></script>
+{% endblock %}

@@ -1,0 +1,83 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:14
+    container_name: packaxis_db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - packaxis_net
+
+  redis:
+    image: redis:7
+    container_name: packaxis_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - packaxis_net
+
+  web:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: packaxis_web
+    command: gunicorn packaxis.wsgi:application --bind 0.0.0.0:8000 --workers 3
+    environment:
+      DJANGO_SETTINGS_MODULE: packaxis.settings
+      DJANGO_ENV: production
+    env_file:
+      - .env
+    volumes:
+      - ./backend:/app
+      - static_volume:/app/frontend/static
+      - media_volume:/app/media
+    depends_on:
+      - db
+      - redis
+    networks:
+      - packaxis_net
+
+  nginx:
+    image: nginx:1.25
+    container_name: packaxis_nginx
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/var/www/static:ro
+      - media_volume:/var/www/media:ro
+      - certbot_etc:/etc/letsencrypt
+      - certbot_var:/var/lib/letsencrypt
+    networks:
+      - packaxis_net
+
+  certbot:
+    image: certbot/certbot:latest
+    container_name: packaxis_certbot
+    volumes:
+      - certbot_etc:/etc/letsencrypt
+      - certbot_var:/var/lib/letsencrypt
+      - ./config/certbot:/var/www/certbot
+    entrypoint: /bin/sh -c "trap exit TERM; while :; do sleep 12h; certbot renew; done"
+    networks:
+      - packaxis_net
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:
+  certbot_etc:
+  certbot_var:
+
+networks:
+  packaxis_net: {}

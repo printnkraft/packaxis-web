@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart is Waiting</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #fafaf2; }
+        .container { max-width: 600px; margin: 20px auto; background: white; padding: 30px; border-radius: 8px; }
+        .header { text-align: center; padding-bottom: 20px; border-bottom: 2px solid #4a7c59; }
+        .logo { font-size: 24px; font-weight: bold; color: #292808; }
+        .content { padding: 20px 0; }
+        .cart-item { display: flex; padding: 15px; background: #fafaf2; margin: 10px 0; border-radius: 5px; }
+        .button { display: inline-block; padding: 15px 40px; background: #4a7c59; color: white; text-decoration: none; border-radius: 5px; font-size: 16px; font-weight: bold; margin: 20px 0; }
+        .discount-box { background: #d2ff99; padding: 20px; border-radius: 5px; text-align: center; margin: 20px 0; }
+        .footer { text-align: center; padding-top: 20px; border-top: 1px solid #e8dcc8; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">🛒 Packaxis Packaging Canada</div>
+        </div>
+        
+        <div class="content">
+            <h2 style="color: #4a7c59;">Don't Forget Your Items! 👋</h2>
+            
+            <p>Hi {{ customer_name|default:"there" }},</p>
+            
+            <p>We noticed you left some items in your cart. Your eco-friendly packaging solutions are still waiting for you!</p>
+            
+            <h3 style="color: #292808;">Items in Your Cart:</h3>
+            {% for item in cart_items %}
+            <div class="cart-item">
+                <div style="flex: 1;">
+                    <strong>{{ item.product.name }}</strong><br>
+                    <span style="color: #666; font-size: 14px;">Quantity: {{ item.quantity }}</span>
+                </div>
+                <div style="font-weight: bold; color: #4a7c59;">${{ item.subtotal }}</div>
+            </div>
+            {% endfor %}
+            
+            <div style="text-align: right; padding: 10px 0; font-size: 18px; font-weight: bold; color: #292808;">
+                Total: ${{ cart_total }}
+            </div>
+            
+            {% if discount_code %}
+            <div class="discount-box">
+                <p style="margin: 0; font-size: 16px; color: #292808;">🎁 Special Offer Just for You!</p>
+                <p style="margin: 5px 0; font-size: 20px; font-weight: bold; color: #4a7c59;">{{ discount_code }}</p>
+                <p style="margin: 0; font-size: 14px; color: #666;">Use this code at checkout for {{ discount_amount }} off!</p>
+            </div>
+            {% endif %}
+            
+            <p style="text-align: center;">
+                <a href="{{ cart_url }}" class="button">Complete Your Purchase</a>
+            </p>
+            
+            <p style="text-align: center; font-size: 14px; color: #666; margin-top: 30px;">
+                This cart will expire in {{ expiration_hours }} hours. Don't miss out on these sustainable packaging solutions!
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>Packaxis Packaging Canada<br>
+            135 Eighth St, Toronto, ON M8V 3C8<br>
+            Phone: +1 844 844 4200</p>
+            <p style="margin-top: 10px;">
+                <a href="mailto:orders@packaxis.ca" style="color: #4a7c59;">Contact Us</a> | 
+                <a href="{{ unsubscribe_url }}" style="color: #666;">Unsubscribe</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

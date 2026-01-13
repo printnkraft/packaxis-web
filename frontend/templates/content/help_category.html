@@ -1,0 +1,210 @@
+﻿{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ category.meta_title|default:category.name }} - Help Center | Packaxis{% endblock %}
+
+{% block extra_head %}
+<!-- SEO Meta Tags -->
+<meta name="description" content="{{ category.meta_description|default:category.description }}">
+<meta name="keywords" content="{{ category.name }}, packaxis help, packaging support, {{ category.name|lower }} guide">
+<link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+<!-- Open Graph -->
+<meta property="og:title" content="{{ category.name }} - Packaxis Help Center">
+<meta property="og:description" content="{{ category.meta_description|default:category.description }}">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+
+<!-- Schema.org CollectionPage -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  "name": "{{ category.name }}",
+  "description": "{{ category.description|escapejs }}",
+  "url": "{{ request.build_absolute_uri }}",
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Packaxis Help Center",
+    "url": "{{ request.scheme }}://{{ request.get_host }}{% url 'content:help_center' %}"
+  },
+  "hasPart": [
+    {% for article in articles %}
+    {
+      "@type": "Article",
+      "headline": "{{ article.title|escapejs }}",
+      "description": "{{ article.excerpt|escapejs }}",
+      "url": "{{ request.scheme }}://{{ request.get_host }}{{ article.get_absolute_url }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<nav class="breadcrumb-nav" aria-label="Breadcrumb">
+  <div class="container">
+    <ol class="breadcrumb-list">
+      <li class="breadcrumb-item">
+        <a href="{% url 'home' %}" class="breadcrumb-link">Home</a>
+      </li>
+      <li class="breadcrumb-separator" aria-hidden="true">
+        <span class="material-symbols-rounded">chevron_right</span>
+      </li>
+      <li class="breadcrumb-item">
+        <a href="{% url 'content:help_center' %}" class="breadcrumb-link">Help Center</a>
+      </li>
+      <li class="breadcrumb-separator" aria-hidden="true">
+        <span class="material-symbols-rounded">chevron_right</span>
+      </li>
+      <li class="breadcrumb-item breadcrumb-item--current">
+        <span aria-current="page">{{ category.name }}</span>
+      </li>
+    </ol>
+  </div>
+</nav>
+
+<!-- Category Hero -->
+<section class="hc-cat-hero" style="--category-color: {{ category.color }}">
+  <div class="container">
+    <div class="hc-cat-hero__content">
+      <div class="hc-cat-hero__icon">
+        <span class="material-symbols-rounded">{{ category.icon }}</span>
+      </div>
+      <h1 class="hc-cat-hero__title">{{ category.name }}</h1>
+      <p class="hc-cat-hero__description">{{ category.description }}</p>
+      <div class="hc-cat-hero__meta">
+        <span class="hc-cat-hero__count">
+          <span class="material-symbols-rounded">article</span>
+          {{ articles.count }} article{{ articles.count|pluralize }}
+        </span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Search within Category -->
+<section class="hc-cat-search">
+  <div class="container">
+    <form action="{% url 'content:help_search' %}" method="get" class="hc-cat-search__form">
+      <input type="hidden" name="category" value="{{ category.slug }}">
+      <div class="hc-cat-search__wrapper">
+        <span class="material-symbols-rounded">search</span>
+        <input
+          type="text"
+          name="q"
+          class="hc-cat-search__input"
+          placeholder="Search in {{ category.name }}..."
+        >
+        <button type="submit" class="hc-cat-search__btn">Search</button>
+      </div>
+    </form>
+  </div>
+</section>
+
+<!-- Articles List -->
+<section class="hc-cat-articles">
+  <div class="container">
+    <div class="hc-cat-articles__wrapper">
+      <!-- Main Content -->
+      <div class="hc-cat-articles__main">
+        <div class="hc-cat-articles__header">
+          <h2 class="hc-cat-articles__title">All Articles</h2>
+          <span class="hc-cat-articles__count">{{ articles.count }} result{{ articles.count|pluralize }}</span>
+        </div>
+
+        <div class="hc-cat-articles__list">
+          {% for article in articles %}
+          <a href="{{ article.get_absolute_url }}" class="hc-cat-article">
+            <div class="hc-cat-article__icon">
+              <span class="material-symbols-rounded">description</span>
+            </div>
+            <div class="hc-cat-article__content">
+              <h3 class="hc-cat-article__title">{{ article.title }}</h3>
+              <p class="hc-cat-article__excerpt">{{ article.excerpt|truncatewords:20 }}</p>
+              <div class="hc-cat-article__meta">
+                <span class="hc-cat-article__read-time">
+                  <span class="material-symbols-rounded">schedule</span>
+                  {{ article.estimated_read_time }} min read
+                </span>
+                {% if article.difficulty != 'beginner' %}
+                <span class="hc-cat-article__difficulty hc-cat-article__difficulty--{{ article.difficulty }}">
+                  {{ article.get_difficulty_display }}
+                </span>
+                {% endif %}
+                {% if article.is_popular %}
+                <span class="hc-cat-article__badge hc-cat-article__badge--popular">
+                  <span class="material-symbols-rounded">trending_up</span>
+                  Popular
+                </span>
+                {% endif %}
+              </div>
+            </div>
+            <span class="hc-cat-article__arrow">
+              <span class="material-symbols-rounded">chevron_right</span>
+            </span>
+          </a>
+          {% empty %}
+          <div class="hc-empty-state">
+            <span class="material-symbols-rounded">article</span>
+            <h3>No Articles Yet</h3>
+            <p>We're working on adding content to this category. Check back soon!</p>
+            <a href="{% url 'content:help_center' %}" class="hc-empty-state__btn">
+              <span class="material-symbols-rounded">arrow_back</span>
+              Back to Help Center
+            </a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Sidebar -->
+      <aside class="hc-cat-sidebar">
+        <!-- Related Categories -->
+        {% if related_categories %}
+        <div class="hc-cat-sidebar__section">
+          <h3 class="hc-cat-sidebar__title">Related Categories</h3>
+          <div class="hc-cat-sidebar__categories">
+            {% for cat in related_categories %}
+            <a href="{{ cat.get_absolute_url }}" class="hc-cat-sidebar__category">
+              <span class="material-symbols-rounded" style="color: {{ cat.color }}">{{ cat.icon }}</span>
+              <span>{{ cat.name }}</span>
+              <span class="hc-cat-sidebar__category-count">{{ cat.article_count }}</span>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endif %}
+
+        <!-- Need Help? -->
+        <div class="hc-cat-sidebar__section hc-cat-sidebar__section--highlight">
+          <div class="hc-cat-sidebar__help">
+            <span class="material-symbols-rounded">contact_support</span>
+            <h3>Need More Help?</h3>
+            <p>Can't find what you're looking for? Our support team is here to help.</p>
+            <a href="{% url 'content:contact' %}" class="hc-cat-sidebar__help-btn">
+              Contact Support
+              <span class="material-symbols-rounded">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Back to Help Center -->
+        <div class="hc-cat-sidebar__section">
+          <a href="{% url 'content:help_center' %}" class="hc-cat-sidebar__back">
+            <span class="material-symbols-rounded">arrow_back</span>
+            <span>Back to Help Center</span>
+          </a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Help Center JavaScript (deferred for performance) -->
+<script src="{% static 'js/help-center.js' %}" defer></script>
+{% endblock %}

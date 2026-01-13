@@ -1,0 +1,1034 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Checkout | PackAxis{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/checkout.css' %}">
+{% endblock %}
+
+{% block body_attrs %} data-page="checkout"{% endblock %}
+
+{% block content %}
+  <!-- Checkout Hero Header -->
+  <section class="checkout-hero">
+    <div class="checkout-hero__badge">
+      <span class="material-symbols-rounded">verified_user</span>
+      Secure Checkout
+    </div>
+    <h1 class="checkout-hero__title">Complete Your Order</h1>
+    <p class="checkout-hero__subtitle">Fast, secure checkout in just a few steps</p>
+  </section>
+
+  <!-- Progress Steps -->
+  <nav class="progress" aria-label="Checkout progress">
+    <div class="progress__container">
+      <div class="progress__track">
+        <div class="progress__fill"></div>
+      </div>
+      <ol class="progress__steps">
+        <li class="progress__step progress__step--active" data-step="1" aria-current="step">
+          <span class="progress__icon">
+            <span class="material-symbols-rounded step-icon">shopping_cart</span>
+            <span class="material-symbols-rounded checkmark">check</span>
+          </span>
+          <span class="progress__label">Cart</span>
+        </li>
+        <li class="progress__step" data-step="2">
+          <span class="progress__icon">
+            <span class="material-symbols-rounded step-icon">local_shipping</span>
+            <span class="material-symbols-rounded checkmark">check</span>
+          </span>
+          <span class="progress__label">Shipping</span>
+        </li>
+        <li class="progress__step" data-step="3">
+          <span class="progress__icon">
+            <span class="material-symbols-rounded step-icon">credit_card</span>
+            <span class="material-symbols-rounded checkmark">check</span>
+          </span>
+          <span class="progress__label">Payment</span>
+        </li>
+        <li class="progress__step" data-step="4">
+          <span class="progress__icon">
+            <span class="material-symbols-rounded step-icon">fact_check</span>
+            <span class="material-symbols-rounded checkmark">check</span>
+          </span>
+          <span class="progress__label">Review</span>
+        </li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="checkout">
+    <form id="checkout-form" class="checkout__container" novalidate>
+      
+      <!-- ================================================================== -->
+      <!-- STEP 1: CART -->
+      <!-- ================================================================== -->
+      <section class="step step--active" data-step="1">
+        <div class="checkout__main">
+          <div class="section">
+            <div class="section__header">
+              <div class="section__icon">
+                <span class="material-symbols-rounded">shopping_cart</span>
+              </div>
+              <div class="section__header-content">
+                <h2 class="section__title">Cart Summary</h2>
+                <p class="section__description">Review your selected items before proceeding</p>
+              </div>
+              <span class="cart-count" id="cart-count">0 items</span>
+            </div>
+            
+            <div class="cart" id="cart-items">
+              <!-- Cart items populated by JS -->
+            </div>
+
+            <div class="cart-empty" id="cart-empty" hidden>
+              <span class="material-symbols-rounded">shopping_cart</span>
+              <h3>Your cart is empty</h3>
+              <p>Add some products to get started</p>
+              <a href="/products/" class="btn btn--outline">Browse Products</a>
+            </div>
+          </div>
+
+          <div class="step__actions">
+            <a href="/products/" class="btn btn--ghost">
+              <span class="material-symbols-rounded">arrow_back</span>
+              Continue Shopping
+            </a>
+            <button type="button" class="btn btn--primary" data-next="2" id="cart-continue">
+              Continue to Shipping
+              <span class="material-symbols-rounded">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <aside class="checkout__sidebar">
+          <div class="order-summary">
+            <h3 class="order-summary__title">
+              <span class="material-symbols-rounded">receipt_long</span>
+              Order Summary
+            </h3>
+            
+            <div class="order-summary__rows">
+              <div class="order-summary__row">
+                <span>Subtotal</span>
+                <span id="summary-subtotal">$0.00</span>
+              </div>
+              <div class="order-summary__row" id="discount-row" hidden>
+                <span>Discount</span>
+                <span class="text-success" id="summary-discount">-$0.00</span>
+              </div>
+              <div class="order-summary__row">
+                <span>Shipping</span>
+                <span class="text-muted" id="summary-shipping">Calculated at next step</span>
+              </div>
+              <div class="order-summary__row">
+                <span>Tax</span>
+                <span id="summary-tax">$0.00</span>
+              </div>
+              <div class="order-summary__row order-summary__row--total">
+                <span>Total</span>
+                <span id="summary-total">$0.00</span>
+              </div>
+            </div>
+
+            <div class="promo">
+              <div class="promo__input-group">
+                <input type="text" id="promo-code" class="promo__input" placeholder="Promo code">
+                <button type="button" id="apply-promo" class="promo__btn">Apply</button>
+              </div>
+              <p class="promo__message" id="promo-message" hidden></p>
+            </div>
+
+            <div class="trust-badges">
+              <div class="trust-badge">
+                <div class="trust-badge__icon">
+                  <span class="material-symbols-rounded">lock</span>
+                </div>
+                <span class="trust-badge__text">Secure SSL</span>
+              </div>
+              <div class="trust-badge">
+                <div class="trust-badge__icon">
+                  <span class="material-symbols-rounded">eco</span>
+                </div>
+                <span class="trust-badge__text">Eco-Friendly</span>
+              </div>
+              <div class="trust-badge">
+                <div class="trust-badge__icon">
+                  <span class="material-symbols-rounded">verified</span>
+                </div>
+                <span class="trust-badge__text">Quality Assured</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Support Section -->
+          <div class="support-card">
+            <div class="support-card__icon">
+              <span class="material-symbols-rounded">support_agent</span>
+            </div>
+            <h4 class="support-card__title">Need Help?</h4>
+            <p class="support-card__text">Our team is here to assist you with your order.</p>
+            <a href="mailto:support@packaxis.com" class="btn btn--outline btn--sm support-card__btn">
+              <span class="material-symbols-rounded">mail</span>
+              Contact Support
+            </a>
+          </div>
+        </aside>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- STEP 2: SHIPPING -->
+      <!-- ================================================================== -->
+      <section class="step" data-step="2" hidden>
+        <div class="checkout__main">
+          <!-- Shipping Details -->
+          <div class="section">
+            <div class="section__header">
+              <div class="section__icon">
+                <span class="material-symbols-rounded">local_shipping</span>
+              </div>
+              <div class="section__header-content">
+                <h2 class="section__title">Shipping Details</h2>
+                <p class="section__description">Enter your delivery address information</p>
+              </div>
+            </div>
+
+            <div id="saved-addresses" class="saved-addresses" hidden>
+              <p class="saved-addresses__label">Saved Addresses</p>
+              <div class="saved-addresses__list" id="addresses-list"></div>
+              <button type="button" class="btn btn--text" id="new-address-btn">
+                <span class="material-symbols-rounded">add</span>
+                Use a new address
+              </button>
+            </div>
+
+            <div class="form-grid" id="shipping-form">
+              <div class="form-group">
+                <label for="ship_first_name" class="form-label">First Name <span class="required">*</span></label>
+                <input type="text" id="ship_first_name" name="ship_first_name" class="form-input" required autocomplete="given-name">
+              </div>
+              <div class="form-group">
+                <label for="ship_last_name" class="form-label">Last Name <span class="required">*</span></label>
+                <input type="text" id="ship_last_name" name="ship_last_name" class="form-input" required autocomplete="family-name">
+              </div>
+
+              <div class="form-group">
+                <label for="ship_email" class="form-label">Email <span class="required">*</span></label>
+                <input type="email" id="ship_email" name="ship_email" class="form-input" required autocomplete="email">
+              </div>
+
+              <div class="form-group">
+                <label for="ship_phone" class="form-label">Phone <span class="required">*</span></label>
+                <input type="tel" id="ship_phone" name="ship_phone" class="form-input" required autocomplete="tel" placeholder="(416) 555-0123">
+              </div>
+
+              <div class="form-group">
+                <label for="ship_company" class="form-label">Company <span class="optional">(Optional)</span></label>
+                <input type="text" id="ship_company" name="ship_company" class="form-input" autocomplete="organization">
+              </div>
+
+              <div class="form-group form-group--full">
+                <label for="ship_address1" class="form-label">Address <span class="required">*</span></label>
+                <input type="text" id="ship_address1" name="ship_address1" class="form-input" required autocomplete="address-line1" placeholder="Street address">
+              </div>
+
+              <div class="form-group form-group--full">
+                <label for="ship_address2" class="form-label">Address Line 2 <span class="optional">(Optional)</span></label>
+                <input type="text" id="ship_address2" name="ship_address2" class="form-input" autocomplete="address-line2" placeholder="Apartment, suite, unit, etc.">
+              </div>
+
+              <div class="form-group">
+                <label for="ship_city" class="form-label">City <span class="required">*</span></label>
+                <input type="text" id="ship_city" name="ship_city" class="form-input" required autocomplete="address-level2">
+              </div>
+              <div class="form-group">
+                <label for="ship_province" class="form-label">Province <span class="required">*</span></label>
+                <select id="ship_province" name="ship_province" class="form-select" required autocomplete="address-level1">
+                  <option value="">Select</option>
+                  <option value="AB">Alberta</option>
+                  <option value="BC">British Columbia</option>
+                  <option value="MB">Manitoba</option>
+                  <option value="NB">New Brunswick</option>
+                  <option value="NL">Newfoundland and Labrador</option>
+                  <option value="NS">Nova Scotia</option>
+                  <option value="NT">Northwest Territories</option>
+                  <option value="NU">Nunavut</option>
+                  <option value="ON">Ontario</option>
+                  <option value="PE">Prince Edward Island</option>
+                  <option value="QC">Quebec</option>
+                  <option value="SK">Saskatchewan</option>
+                  <option value="YT">Yukon</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="ship_postal" class="form-label">Postal Code <span class="required">*</span></label>
+                <input type="text" id="ship_postal" name="ship_postal" class="form-input" required autocomplete="postal-code" placeholder="A1A 1A1">
+              </div>
+              <div class="form-group">
+                <label for="ship_country" class="form-label">Country</label>
+                <input type="text" id="ship_country" name="ship_country" class="form-input" value="Canada" readonly>
+              </div>
+            </div>
+          </div>
+
+          <!-- Shipping Options -->
+          <div class="section">
+            <div class="section__header">
+              <div class="section__icon">
+                <span class="material-symbols-rounded">inventory_2</span>
+              </div>
+              <div class="section__header-content">
+                <h2 class="section__title">Shipping Options</h2>
+                <p class="section__description">Select your preferred delivery method</p>
+              </div>
+            </div>
+
+            <div class="shipping-options" id="shipping-options">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <div class="step__actions">
+            <button type="button" class="btn btn--ghost" data-prev="1">
+              <span class="material-symbols-rounded">arrow_back</span>
+              Back to Cart
+            </button>
+            <button type="button" class="btn btn--primary" data-next="3">
+              Continue to Payment
+              <span class="material-symbols-rounded">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <aside class="checkout__sidebar">
+          <div class="order-summary">
+            <h3 class="order-summary__title">
+              <span class="material-symbols-rounded">receipt_long</span>
+              Order Summary
+            </h3>
+            
+            <div class="order-summary__items" id="sidebar-items-2"></div>
+
+            <div class="order-summary__rows">
+              <div class="order-summary__row">
+                <span>Subtotal</span>
+                <span class="subtotal-value">$0.00</span>
+              </div>
+              <div class="order-summary__row discount-row" hidden>
+                <span>Discount</span>
+                <span class="text-success discount-value">-$0.00</span>
+              </div>
+              <div class="order-summary__row">
+                <span>Shipping</span>
+                <span class="shipping-value">$0.00</span>
+              </div>
+              <div class="order-summary__row">
+                <span>Tax</span>
+                <span class="tax-value">$0.00</span>
+              </div>
+              <div class="order-summary__row order-summary__row--total">
+                <span>Total</span>
+                <span class="total-value">$0.00</span>
+              </div>
+            </div>
+
+            <div class="promo promo--compact">
+              <div class="promo__input-group">
+                <input type="text" class="promo__input promo-input" placeholder="Promo code">
+                <button type="button" class="promo__btn apply-promo-btn">Apply</button>
+              </div>
+              <p class="promo__message promo-msg" hidden></p>
+            </div>
+
+            <div class="trust-badges">
+              <div class="trust-badge">
+                <div class="trust-badge__icon">
+                  <span class="material-symbols-rounded">lock</span>
+                </div>
+                <span class="trust-badge__text">Secure SSL</span>
+              </div>
+              <div class="trust-badge">
+                <div class="trust-badge__icon">
+                  <span class="material-symbols-rounded">eco</span>
+                </div>
+                <span class="trust-badge__text">Eco-Friendly</span>
+              </div>
+              <div class="trust-badge">
+                <div class="trust-badge__icon">
+                  <span class="material-symbols-rounded">verified</span>
+                </div>
+                <span class="trust-badge__text">Quality Assured</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Support Section -->
+          <div class="support-card">
+            <div class="support-card__icon">
+              <span class="material-symbols-rounded">support_agent</span>
+            </div>
+            <h4 class="support-card__title">Need Help?</h4>
+            <p class="support-card__text">Our team is here to assist you with your order.</p>
+            <a href="mailto:support@packaxis.com" class="btn btn--outline btn--sm support-card__btn">
+              <span class="material-symbols-rounded">mail</span>
+              Contact Support
+            </a>
+          </div>
+        </aside>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- STEP 3: PAYMENT -->
+      <!-- ================================================================== -->
+      <section class="step" data-step="3" hidden>
+        <div class="checkout__main">
+          <!-- Payment Options -->
+          <div class="section">
+            <div class="section__header">
+              <div class="section__icon">
+                <span class="material-symbols-rounded">credit_card</span>
+              </div>
+              <div class="section__header-content">
+                <h2 class="section__title">Payment Method</h2>
+                <p class="section__description">Choose how you'd like to pay for your order</p>
+              </div>
+            </div>
+
+            <div class="payment-methods">
+              <label class="payment-method payment-method--selected">
+                <input type="radio" name="payment_method" value="card" checked>
+                <span class="payment-method__radio"></span>
+                <span class="material-symbols-rounded payment-method__icon">credit_card</span>
+                <span class="payment-method__label">Credit / Debit Card</span>
+                <span class="payment-method__cards">
+                  <img src="{% static 'images/cards/visa.svg' %}" alt="Visa" height="24">
+                  <img src="{% static 'images/cards/mastercard.svg' %}" alt="Mastercard" height="24">
+                  <img src="{% static 'images/cards/amex.svg' %}" alt="Amex" height="24">
+                </span>
+              </label>
+
+              <label class="payment-method">
+                <input type="radio" name="payment_method" value="bank">
+                <span class="payment-method__radio"></span>
+                <span class="material-symbols-rounded payment-method__icon">account_balance</span>
+                <span class="payment-method__label">Bank Transfer</span>
+                <span class="payment-method__badge">Enterprise</span>
+              </label>
+            </div>
+
+            <!-- Card Form -->
+            <div class="payment-form" id="card-form">
+              <div class="form-group">
+                <label for="card_number" class="form-label">Card Number <span class="required">*</span></label>
+                <div class="form-input-icon">
+                  <input type="text" id="card_number" name="card_number" class="form-input" required placeholder="1234 5678 9012 3456" maxlength="19" inputmode="numeric">
+                  <span class="form-input-icon__icon" id="card-brand"></span>
+                </div>
+              </div>
+
+              <div class="form-row form-row--2">
+                <div class="form-group">
+                  <label for="card_expiry" class="form-label">Expiry <span class="required">*</span></label>
+                  <input type="text" id="card_expiry" name="card_expiry" class="form-input" required placeholder="MM/YY" maxlength="5" inputmode="numeric">
+                </div>
+                <div class="form-group">
+                  <label for="card_cvc" class="form-label">CVC <span class="required">*</span></label>
+                  <div class="form-input-icon">
+                    <input type="text" id="card_cvc" name="card_cvc" class="form-input" required placeholder="123" maxlength="4" inputmode="numeric">
+                    <span class="material-symbols-rounded form-input-icon__icon text-muted">help</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="card_name" class="form-label">Name on Card <span class="required">*</span></label>
+                <input type="text" id="card_name" name="card_name" class="form-input" required placeholder="As it appears on your card" autocomplete="cc-name">
+              </div>
+            </div>
+
+            <!-- Bank Transfer Info -->
+            <div class="payment-form" id="bank-form" hidden>
+              <div class="info-box">
+                <span class="material-symbols-rounded">info</span>
+                <div>
+                  <p><strong>Bank Transfer Instructions</strong></p>
+                  <p>Once you place your order, you'll receive an email with our bank details. Your order will be processed after payment is confirmed (1-2 business days).</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Billing Address -->
+          <div class="section">
+            <div class="section__header">
+              <div class="section__icon">
+                <span class="material-symbols-rounded">receipt</span>
+              </div>
+              <div class="section__header-content">
+                <h2 class="section__title">Billing Address</h2>
+                <p class="section__description">Specify where to send your invoice</p>
+              </div>
+            </div>
+
+            <div class="billing-options">
+              <label class="billing-option billing-option--selected">
+                <input type="radio" name="billing_same" value="same" checked>
+                <span class="billing-option__radio"></span>
+                <span>Same as shipping address</span>
+              </label>
+              <label class="billing-option">
+                <input type="radio" name="billing_same" value="different">
+                <span class="billing-option__radio"></span>
+                <span>Use a different billing address</span>
+              </label>
+            </div>
+
+            <div class="form-grid" id="billing-form" hidden>
+              <div class="form-group">
+                <label for="bill_first_name" class="form-label">First Name <span class="required">*</span></label>
+                <input type="text" id="bill_first_name" name="bill_first_name" class="form-input" autocomplete="billing given-name">
+              </div>
+              <div class="form-group">
+                <label for="bill_last_name" class="form-label">Last Name <span class="required">*</span></label>
+                <input type="text" id="bill_last_name" name="bill_last_name" class="form-input" autocomplete="billing family-name">
+              </div>
+
+              <div class="form-group form-group--full">
+                <label for="bill_address1" class="form-label">Address <span class="required">*</span></label>
+                <input type="text" id="bill_address1" name="bill_address1" class="form-input" autocomplete="billing address-line1">
+              </div>
+
+              <div class="form-group form-group--full">
+                <label for="bill_address2" class="form-label">Address Line 2 <span class="optional">(Optional)</span></label>
+                <input type="text" id="bill_address2" name="bill_address2" class="form-input" autocomplete="billing address-line2">
+              </div>
+
+              <div class="form-group">
+                <label for="bill_city" class="form-label">City <span class="required">*</span></label>
+                <input type="text" id="bill_city" name="bill_city" class="form-input" autocomplete="billing address-level2">
+              </div>
+              <div class="form-group">
+                <label for="bill_province" class="form-label">Province <span class="required">*</span></label>
+                <select id="bill_province" name="bill_province" class="form-select" autocomplete="billing address-level1">
+                  <option value="">Select</option>
+                  <option value="AB">Alberta</option>
+                  <option value="BC">British Columbia</option>
+                  <option value="MB">Manitoba</option>
+                  <option value="NB">New Brunswick</option>
+                  <option value="NL">Newfoundland and Labrador</option>
+                  <option value="NS">Nova Scotia</option>
+                  <option value="NT">Northwest Territories</option>
+                  <option value="NU">Nunavut</option>
+                  <option value="ON">Ontario</option>
+                  <option value="PE">Prince Edward Island</option>
+                  <option value="QC">Quebec</option>
+                  <option value="SK">Saskatchewan</option>
+                  <option value="YT">Yukon</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="bill_postal" class="form-label">Postal Code <span class="required">*</span></label>
+                <input type="text" id="bill_postal" name="bill_postal" class="form-input" autocomplete="billing postal-code">
+              </div>
+            </div>
+          </div>
+
+          <div class="step__actions">
+            <button type="button" class="btn btn--ghost" data-prev="2">
+              <span class="material-symbols-rounded">arrow_back</span>
+              Back to Shipping
+            </button>
+            <button type="button" class="btn btn--primary" data-next="4">
+              Review Order
+              <span class="material-symbols-rounded">arrow_forward</span>
+            </button>
+          </div>
+        </div>
+
+        <aside class="checkout__sidebar">
+          <div class="order-summary">
+            <h3 class="order-summary__title">
+              <span class="material-symbols-rounded">receipt_long</span>
+              Order Summary
+            </h3>
+            
+            <div class="order-summary__items" id="sidebar-items-3"></div>
+
+            <div class="order-summary__rows">
+              <div class="order-summary__row">
+                <span>Subtotal</span>
+                <span class="subtotal-value">$0.00</span>
+              </div>
+              <div class="order-summary__row discount-row" hidden>
+                <span>Discount</span>
+                <span class="text-success discount-value">-$0.00</span>
+              </div>
+              <div class="order-summary__row">
+                <span>Shipping</span>
+                <span class="shipping-value">$0.00</span>
+              </div>
+              <div class="order-summary__row">
+                <span>Tax</span>
+                <span class="tax-value">$0.00</span>
+              </div>
+              <div class="order-summary__row order-summary__row--total">
+                <span>Total</span>
+                <span class="total-value">$0.00</span>
+              </div>
+            </div>
+
+            <div class="trust-badges">
+              <div class="trust-badge">
+                <div class="trust-badge__icon">
+                  <span class="material-symbols-rounded">lock</span>
+                </div>
+                <span class="trust-badge__text">Secure SSL</span>
+              </div>
+              <div class="trust-badge">
+                <div class="trust-badge__icon">
+                  <span class="material-symbols-rounded">eco</span>
+                </div>
+                <span class="trust-badge__text">Eco-Friendly</span>
+              </div>
+              <div class="trust-badge">
+                <div class="trust-badge__icon">
+                  <span class="material-symbols-rounded">verified</span>
+                </div>
+                <span class="trust-badge__text">Quality Assured</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Support Section -->
+          <div class="support-card">
+            <div class="support-card__icon">
+              <span class="material-symbols-rounded">support_agent</span>
+            </div>
+            <h4 class="support-card__title">Need Help?</h4>
+            <p class="support-card__text">Our team is here to assist you with your order.</p>
+            <a href="mailto:support@packaxis.com" class="btn btn--outline btn--sm support-card__btn">
+              <span class="material-symbols-rounded">mail</span>
+              Contact Support
+            </a>
+          </div>
+        </aside>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- STEP 4: REVIEW -->
+      <!-- ================================================================== -->
+      <section class="step" data-step="4" hidden>
+        <div class="checkout__main">
+          <!-- Product Summary -->
+          <div class="section">
+            <div class="section__header">
+              <div class="section__icon">
+                <span class="material-symbols-rounded">inventory_2</span>
+              </div>
+              <div class="section__header-content">
+                <h2 class="section__title">Product Summary</h2>
+                <p class="section__description">Items in your order</p>
+              </div>
+              <button type="button" class="btn btn--text" data-goto="1">Edit</button>
+            </div>
+            <div class="review-cart" id="review-cart"></div>
+          </div>
+
+          <!-- Shipping Address -->
+          <div class="section">
+            <div class="section__header">
+              <div class="section__icon">
+                <span class="material-symbols-rounded">location_on</span>
+              </div>
+              <div class="section__header-content">
+                <h2 class="section__title">Shipping Address</h2>
+                <p class="section__description">Delivery destination</p>
+              </div>
+              <button type="button" class="btn btn--text" data-goto="2">Edit</button>
+            </div>
+            <div class="review-address" id="review-shipping-address"></div>
+          </div>
+
+          <!-- Billing Address -->
+          <div class="section" id="review-billing-section" hidden>
+            <div class="section__header">
+              <div class="section__icon">
+                <span class="material-symbols-rounded">receipt</span>
+              </div>
+              <div class="section__header-content">
+                <h2 class="section__title">Billing Address</h2>
+                <p class="section__description">Invoice address</p>
+              </div>
+              <button type="button" class="btn btn--text" data-goto="3">Edit</button>
+            </div>
+            <div class="review-address" id="review-billing-address"></div>
+          </div>
+
+          <!-- Payment -->
+          <div class="section">
+            <div class="section__header">
+              <div class="section__icon">
+                <span class="material-symbols-rounded">credit_card</span>
+              </div>
+              <div class="section__header-content">
+                <h2 class="section__title">Payment Method</h2>
+                <p class="section__description">How you're paying</p>
+              </div>
+              <button type="button" class="btn btn--text" data-goto="3">Edit</button>
+            </div>
+            <div class="review-payment" id="review-payment"></div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="section">
+            <div class="section__header">
+              <div class="section__icon">
+                <span class="material-symbols-rounded">receipt_long</span>
+              </div>
+              <div class="section__header-content">
+                <h2 class="section__title">Order Summary</h2>
+                <p class="section__description">Order totals and costs</p>
+              </div>
+            </div>
+            <div class="review-totals">
+              <div class="review-totals__row">
+                <span>Subtotal</span>
+                <span class="subtotal-value">$0.00</span>
+              </div>
+              <div class="review-totals__row discount-row" hidden>
+                <span>Discount</span>
+                <span class="text-success discount-value">-$0.00</span>
+              </div>
+              <div class="review-totals__row">
+                <span>Shipping</span>
+                <span class="shipping-value">$0.00</span>
+              </div>
+              <div class="review-totals__row">
+                <span>Tax</span>
+                <span class="tax-value">$0.00</span>
+              </div>
+              <div class="review-totals__row review-totals__row--total">
+                <span>Total</span>
+                <span class="total-value">$0.00</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Terms -->
+          <div class="section">
+            <div class="terms">
+              <label class="checkbox">
+                <input type="checkbox" id="terms" name="terms" required>
+                <span class="checkbox__box"></span>
+                <span class="checkbox__label">I agree to the <a href="/terms/" target="_blank">Terms and Conditions</a> and <a href="/privacy/" target="_blank">Privacy Policy</a> <span class="required">*</span></span>
+              </label>
+              <label class="checkbox">
+                <input type="checkbox" id="newsletter" name="newsletter">
+                <span class="checkbox__box"></span>
+                <span class="checkbox__label">Subscribe to our newsletter for exclusive wholesale discounts</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="step__actions">
+            <button type="button" class="btn btn--ghost" data-prev="3">
+              <span class="material-symbols-rounded">arrow_back</span>
+              Back to Payment
+            </button>
+            <button type="submit" class="btn btn--primary btn--large" id="place-order-btn">
+              <span class="material-symbols-rounded">lock</span>
+              Place Secure Order • <span class="total-value">$0.00</span>
+            </button>
+          </div>
+
+          <div class="trust-badges trust-badges--horizontal">
+            <div class="trust-badge">
+              <div class="trust-badge__icon">
+                <span class="material-symbols-rounded">lock</span>
+              </div>
+              <span class="trust-badge__text">Secure SSL</span>
+            </div>
+            <div class="trust-badge">
+              <div class="trust-badge__icon">
+                <span class="material-symbols-rounded">eco</span>
+              </div>
+              <span class="trust-badge__text">Eco-Friendly</span>
+            </div>
+            <div class="trust-badge">
+              <div class="trust-badge__icon">
+                <span class="material-symbols-rounded">verified</span>
+              </div>
+              <span class="trust-badge__text">Quality Assured</span>
+            </div>
+          </div>
+        </div>
+
+        <aside class="checkout__sidebar checkout__sidebar--sticky">
+          <div class="order-summary">
+            <h3 class="order-summary__title">
+              <span class="material-symbols-rounded">receipt_long</span>
+              Order Summary
+            </h3>
+            
+            <div class="order-summary__items" id="sidebar-items-4"></div>
+
+            <div class="order-summary__rows">
+              <div class="order-summary__row">
+                <span>Subtotal</span>
+                <span class="subtotal-value">$0.00</span>
+              </div>
+              <div class="order-summary__row discount-row" hidden>
+                <span>Discount</span>
+                <span class="text-success discount-value">-$0.00</span>
+              </div>
+              <div class="order-summary__row">
+                <span>Shipping</span>
+                <span class="shipping-value">$0.00</span>
+              </div>
+              <div class="order-summary__row">
+                <span>Tax</span>
+                <span class="tax-value">$0.00</span>
+              </div>
+              <div class="order-summary__row order-summary__row--total">
+                <span>Total</span>
+                <span class="total-value">$0.00</span>
+              </div>
+            </div>
+
+            <div class="trust-badges">
+              <div class="trust-badge">
+                <div class="trust-badge__icon">
+                  <span class="material-symbols-rounded">lock</span>
+                </div>
+                <span class="trust-badge__text">Secure SSL</span>
+              </div>
+              <div class="trust-badge">
+                <div class="trust-badge__icon">
+                  <span class="material-symbols-rounded">eco</span>
+                </div>
+                <span class="trust-badge__text">Eco-Friendly</span>
+              </div>
+              <div class="trust-badge">
+                <div class="trust-badge__icon">
+                  <span class="material-symbols-rounded">verified</span>
+                </div>
+                <span class="trust-badge__text">Quality Assured</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Support Section -->
+          <div class="support-card">
+            <div class="support-card__icon">
+              <span class="material-symbols-rounded">support_agent</span>
+            </div>
+            <h4 class="support-card__title">Need Help?</h4>
+            <p class="support-card__text">Our team is here to assist you with your order.</p>
+            <a href="mailto:support@packaxis.com" class="btn btn--outline btn--sm support-card__btn">
+              <span class="material-symbols-rounded">mail</span>
+              Contact Support
+            </a>
+          </div>
+        </aside>
+      </section>
+
+      <!-- ================================================================== -->
+      <!-- STEP 5: ORDER CONFIRMED -->
+      <!-- ================================================================== -->
+      <section class="step-order-confirmed" data-step="5" hidden>
+        <div class="confirmation">
+          <!-- Success Header -->
+          <div class="confirmation__header">
+            <div class="confirmation__icon">
+              <span class="material-symbols-rounded">verified</span>
+            </div>
+            <h1 class="confirmation__title">Order Confirmed</h1>
+            <p class="confirmation__order-number" id="conf-order-number">PKX20260110214700</p>
+            <p class="confirmation__meta">
+              <span>Placed on <span id="conf-date">January 10, 2026</span> at <span id="conf-time">4:47 PM</span></span>
+              <span class="confirmation__status" id="conf-status">Pending</span>
+            </p>
+          </div>
+
+          <!-- Order Timeline -->
+          <div class="confirmation__section">
+            <div class="timeline">
+              <div class="timeline__item timeline__item--completed">
+                <span class="material-symbols-rounded">shopping_cart</span>
+                <span>Order Placed</span>
+                <small id="conf-placed-date">Jan 10</small>
+              </div>
+              <div class="timeline__item timeline__item--active">
+                <span class="material-symbols-rounded">inventory_2</span>
+                <span>Processing</span>
+              </div>
+              <div class="timeline__item">
+                <span class="material-symbols-rounded">local_shipping</span>
+                <span>Shipped</span>
+              </div>
+              <div class="timeline__item">
+                <span class="material-symbols-rounded">package_2</span>
+                <span>Delivered</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="confirmation__grid">
+            <!-- Order Items -->
+            <div class="confirmation__section">
+              <div class="section__header">
+                <div class="section__icon">
+                  <span class="material-symbols-rounded">inventory</span>
+                </div>
+                <div class="section__header-content">
+                  <h2 class="section__title">Order Items</h2>
+                </div>
+                <span class="text-muted" id="conf-item-count">1 item</span>
+              </div>
+              <div class="conf-items" id="conf-items"></div>
+            </div>
+
+            <!-- Shipping & Tracking -->
+            <div class="confirmation__section">
+              <div class="section__header">
+                <div class="section__icon">
+                  <span class="material-symbols-rounded">local_shipping</span>
+                </div>
+                <div class="section__header-content">
+                  <h2 class="section__title">Shipping & Tracking</h2>
+                </div>
+              </div>
+              <div class="conf-shipping">
+                <p class="conf-shipping__label">Delivery information</p>
+                <div class="conf-shipping__info">
+                  <span class="material-symbols-rounded">schedule</span>
+                  <p id="conf-shipping-info">Your order is being prepared. Tracking information will be available once shipped.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="confirmation__grid">
+            <!-- Order Summary -->
+            <div class="confirmation__section">
+              <div class="section__header">
+                <div class="section__icon">
+                  <span class="material-symbols-rounded">receipt_long</span>
+                </div>
+                <div class="section__header-content">
+                  <h2 class="section__title">Order Summary</h2>
+                </div>
+              </div>
+              <div class="conf-totals">
+                <div class="conf-totals__row">
+                  <span>Subtotal</span>
+                  <span id="conf-subtotal">$0.00</span>
+                </div>
+                <div class="conf-totals__row" id="conf-discount-row" hidden>
+                  <span>Discount</span>
+                  <span class="text-success" id="conf-discount">-$0.00</span>
+                </div>
+                <div class="conf-totals__row">
+                  <span>Shipping</span>
+                  <span id="conf-shipping-cost">FREE</span>
+                </div>
+                <div class="conf-totals__row">
+                  <span>Tax</span>
+                  <span id="conf-tax">$0.00</span>
+                </div>
+                <div class="conf-totals__row conf-totals__row--total">
+                  <span>Total</span>
+                  <span id="conf-total">$0.00</span>
+                </div>
+                <div class="conf-totals__payment">
+                  <span class="material-symbols-rounded">credit_card</span>
+                  <span id="conf-payment-method">Credit Card</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Addresses -->
+            <div class="confirmation__section">
+              <div class="conf-addresses">
+                <div class="conf-address">
+                  <div class="section__header">
+                    <div class="section__icon">
+                      <span class="material-symbols-rounded">location_on</span>
+                    </div>
+                    <div class="section__header-content">
+                      <h2 class="section__title">Shipping Address</h2>
+                    </div>
+                  </div>
+                  <address id="conf-ship-address"></address>
+                </div>
+                <div class="conf-address" id="conf-bill-section">
+                  <div class="section__header">
+                    <div class="section__icon">
+                      <span class="material-symbols-rounded">receipt</span>
+                    </div>
+                    <div class="section__header-content">
+                      <h2 class="section__title">Billing Address</h2>
+                    </div>
+                  </div>
+                  <address id="conf-bill-address"></address>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Help Section -->
+          <div class="confirmation__help">
+            <h3>Need Help?</h3>
+            <p>Our support team is here to assist you with any questions about your order.</p>
+            <a href="/contact/" class="btn btn--outline">
+              <span class="material-symbols-rounded">support_agent</span>
+              Contact Support
+            </a>
+          </div>
+
+          <!-- Actions -->
+          <div class="confirmation__actions">
+            <a href="/products/" class="btn btn--primary">
+              Continue Shopping
+            </a>
+            <a href="/account/orders/" class="btn btn--outline">
+              View All Orders
+            </a>
+          </div>
+        </div>
+      </section>
+
+    </form>
+
+  <!-- Processing Overlay -->
+  <div class="processing-overlay" id="processing-overlay" hidden>
+    <div class="processing-overlay__content">
+      <div class="spinner"></div>
+      <p>Processing your order...</p>
+      <small>Please do not close this page</small>
+      <div class="processing-overlay__steps">
+        <span class="processing-step" data-step="validate">Validating payment</span>
+        <span class="processing-step" data-step="process">Processing order</span>
+        <span class="processing-step" data-step="confirm">Confirming details</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Summary Toggle -->
+  <button type="button" class="mobile-summary-toggle" id="mobile-summary-toggle" aria-expanded="false">
+    <span class="material-symbols-rounded">shopping_cart</span>
+    <span>Order Summary</span>
+    <span class="mobile-summary-toggle__total" id="mobile-total">$0.00</span>
+    <span class="material-symbols-rounded mobile-summary-toggle__chevron">expand_less</span>
+  </button>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/checkout.js' %}"></script>
+{% endblock %}
+

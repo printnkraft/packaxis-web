@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  {% load vite_tags %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Packaxis Packaging Canada - Premium Eco-Friendly Packaging Solutions{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}Canada's trusted supplier of eco-friendly packaging solutions. Premium paper bags, custom branded packaging, and paper straws with wholesale pricing for businesses across Canada.{% endblock %}">
+  <meta name="keywords" content="custom branded bags, paper bags Canada, kraft paper bags wholesale, eco-friendly packaging Toronto, custom printed bags, shopping bags bulk, restaurant packaging, retail paper bags, sustainable packaging Canada, brown kraft bags Ontario">
+  <link rel="canonical" href="https://www.packaxis.ca/">
+  
+  <link rel="icon" type="image/png" href="{% static 'logo/Packaxis-favicon.png' %}">
+  {# All CSS disabled per redesign request #}
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  {% include 'partials/header.html' %}
+
+  <main id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  {% include 'partials/footer.html' %}
+
+  <script src="{% static 'js/utils.js' %}"></script>
+  <script src="{% static 'js/global.js' %}"></script>
+  {% vite_js 'src/main.ts' as vite_main_js %}
+  {% if vite_main_js %}
+    <script type="module" src="{{ vite_main_js }}"></script>
+  {% endif %}
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

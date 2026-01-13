@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}Sign In - PackAxis{% endblock %}
+
+{% block extra_head %}
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{% static 'css/pages/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+  <div class="auth-container">
+    <!-- Left Panel - Branding -->
+    <div class="auth-branding">
+      <div class="auth-branding__content">
+        <a href="{% url 'home' %}" class="auth-branding__logo" aria-label="PackAxis Home">
+          <span class="material-symbols-rounded">inventory_2</span>
+        </a>
+        <h1 class="auth-branding__title">Welcome back to PackAxis</h1>
+        <p class="auth-branding__text">Your trusted partner for premium packaging solutions. Sign in to manage orders and explore our collection.</p>
+        
+        <div class="auth-features">
+          <div class="auth-feature">
+            <div class="auth-feature__icon">
+              <span class="material-symbols-rounded">local_shipping</span>
+            </div>
+            <span>Track orders in real-time</span>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature__icon">
+              <span class="material-symbols-rounded">location_on</span>
+            </div>
+            <span>Save addresses for quick checkout</span>
+          </div>
+          <div class="auth-feature">
+            <div class="auth-feature__icon">
+              <span class="material-symbols-rounded">loyalty</span>
+            </div>
+            <span>Exclusive member discounts</span>
+          </div>
+        </div>
+
+        <div class="auth-trust">
+          <div class="auth-trust__item">
+            <span class="material-symbols-rounded">verified_user</span>
+            <span>Secure & Encrypted</span>
+          </div>
+          <div class="auth-trust__item">
+            <span class="material-symbols-rounded">support_agent</span>
+            <span>24/7 Support</span>
+          </div>
+        </div>
+      </div>
+      <div class="auth-branding__pattern"></div>
+    </div>
+
+    <!-- Right Panel - Form -->
+    <div class="auth-form-panel">
+      <div class="auth-card">
+        <div class="auth-card__header">
+          <div class="auth-card__badge">
+            <span class="material-symbols-rounded">lock</span>
+            <span>Secure Login</span>
+          </div>
+          <h2 class="auth-card__title">Sign in to your account</h2>
+          <p class="auth-card__subtitle">Enter your credentials to continue</p>
+        </div>
+
+        {% if form.non_field_errors %}
+        <div class="auth-alert auth-alert--error" role="alert">
+          <span class="material-symbols-rounded">error</span>
+          <span>{{ form.non_field_errors|join:", " }}</span>
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'account_login' %}" class="auth-form" novalidate>
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ redirect_field_value|default:'/' }}" />
+
+          <div class="auth-field">
+            <label for="id_login" class="auth-field__label">Email Address</label>
+            <div class="auth-field__input-wrap {% if form.login.errors %}auth-field__input-wrap--error{% endif %}">
+              <span class="material-symbols-rounded auth-field__icon">mail</span>
+              <input 
+                type="email" 
+                name="login" 
+                id="id_login" 
+                required 
+                autocomplete="email" 
+                value="{{ form.login.value|default:'' }}" 
+                placeholder="you@example.com" 
+                class="auth-field__input"
+                aria-describedby="{% if form.login.errors %}login-error{% endif %}"
+              >
+            </div>
+            {% if form.login.errors %}
+            <p class="auth-field__error" id="login-error">
+              <span class="material-symbols-rounded">error</span>
+              {{ form.login.errors|join:", " }}
+            </p>
+            {% endif %}
+          </div>
+
+          <div class="auth-field">
+            <label for="id_password" class="auth-field__label">Password</label>
+            <div class="auth-field__input-wrap {% if form.password.errors %}auth-field__input-wrap--error{% endif %}">
+              <span class="material-symbols-rounded auth-field__icon">lock</span>
+              <input 
+                type="password" 
+                name="password" 
+                id="id_password" 
+                required 
+                autocomplete="current-password" 
+                placeholder="Enter your password" 
+                class="auth-field__input"
+                aria-describedby="{% if form.password.errors %}password-error{% endif %}"
+              >
+              <button type="button" class="auth-field__toggle" aria-label="Toggle password visibility" data-toggle-password>
+                <span class="material-symbols-rounded">visibility</span>
+              </button>
+            </div>
+            {% if form.password.errors %}
+            <p class="auth-field__error" id="password-error">
+              <span class="material-symbols-rounded">error</span>
+              {{ form.password.errors|join:", " }}
+            </p>
+            {% endif %}
+          </div>
+
+          <div class="auth-options">
+            <label class="auth-checkbox">
+              <input type="checkbox" name="remember" id="id_remember" {% if form.remember.value %}checked{% endif %}>
+              <span class="auth-checkbox__mark"></span>
+              <span class="auth-checkbox__label">Remember me</span>
+            </label>
+            <a href="{% url 'account_reset_password' %}" class="auth-link">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="auth-btn auth-btn--primary">
+            <span>Sign In</span>
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </button>
+        </form>
+
+        <div class="auth-divider">
+          <span>New to PackAxis?</span>
+        </div>
+
+        <div class="auth-footer">
+          <p class="auth-footer__text">Don't have an account?</p>
+          <a href="{% url 'account_signup' %}" class="auth-btn auth-btn--outline">
+            <span class="material-symbols-rounded">person_add</span>
+            <span>Create Account</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  'use strict';
+  
+  // Password visibility toggle
+  document.querySelectorAll('[data-toggle-password]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      const input = this.closest('.auth-field__input-wrap').querySelector('input');
+      const icon = this.querySelector('.material-symbols-rounded');
+      
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = 'visibility_off';
+      } else {
+        input.type = 'password';
+        icon.textContent = 'visibility';
+      }
+    });
+  });
+
+  // Enhanced form validation
+  const form = document.querySelector('.auth-form');
+  if (form) {
+    form.addEventListener('submit', function(e) {
+      const email = document.getElementById('id_login');
+      const password = document.getElementById('id_password');
+      let isValid = true;
+
+      // Clear previous custom errors
+      document.querySelectorAll('.auth-field__input-wrap').forEach(function(wrap) {
+        wrap.classList.remove('auth-field__input-wrap--error');
+      });
+
+      if (email && !email.value.trim()) {
+        email.closest('.auth-field__input-wrap').classList.add('auth-field__input-wrap--error');
+        isValid = false;
+      }
+
+      if (password && !password.value) {
+        password.closest('.auth-field__input-wrap').classList.add('auth-field__input-wrap--error');
+        isValid = false;
+      }
+
+      if (!isValid) {
+        e.preventDefault();
+      }
+    });
+  }
+})();
+</script>
+{% endblock %}

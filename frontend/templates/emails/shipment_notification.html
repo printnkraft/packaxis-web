@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Order Has Shipped!</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #fafaf2; }
+        .container { max-width: 600px; margin: 20px auto; background: white; padding: 30px; border-radius: 8px; }
+        .header { text-align: center; padding-bottom: 20px; border-bottom: 2px solid #4a7c59; }
+        .logo { font-size: 24px; font-weight: bold; color: #292808; }
+        .content { padding: 20px 0; }
+        .tracking-box { background: #d2ff99; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center; }
+        .tracking-number { font-size: 20px; font-weight: bold; color: #292808; letter-spacing: 1px; }
+        .button { display: inline-block; padding: 12px 30px; background: #4a7c59; color: white; text-decoration: none; border-radius: 5px; margin: 10px 0; }
+        .footer { text-align: center; padding-top: 20px; border-top: 1px solid #e8dcc8; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">📦 Packaxis Packaging Canada</div>
+        </div>
+        
+        <div class="content">
+            <h2 style="color: #4a7c59;">Your Order is On the Way! 🚚</h2>
+            
+            <p>Hi {{ order.customer.first_name|default:"Valued Customer" }},</p>
+            
+            <p>Great news! Your order <strong>{{ order.order_number }}</strong> has been shipped and is on its way to you.</p>
+            
+            <div class="tracking-box">
+                <p style="margin: 0 0 10px 0; font-size: 14px; color: #292808;">Track your shipment:</p>
+                <div class="tracking-number">{{ tracking_number }}</div>
+                <p style="margin: 10px 0 0 0; font-size: 12px; color: #666;">Carrier: {{ carrier }}</p>
+                {% if estimated_delivery %}
+                <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">Estimated Delivery: {{ estimated_delivery|date:"F d, Y" }}</p>
+                {% endif %}
+            </div>
+            
+            {% if tracking_url %}
+            <p style="text-align: center;">
+                <a href="{{ tracking_url }}" class="button">Track Your Package</a>
+            </p>
+            {% endif %}
+            
+            <h3 style="color: #292808; margin-top: 30px;">Order Summary</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+                {% for line in order.lines.all %}
+                <tr style="border-bottom: 1px solid #e8dcc8;">
+                    <td style="padding: 10px 0;">{{ line.product.name }} x{{ line.quantity }}</td>
+                    <td style="text-align: right; padding: 10px 0;">${{ line.extended_price }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            
+            <p style="margin-top: 20px; font-size: 14px; color: #666;">
+                If you have any questions about your shipment, please contact us at 
+                <a href="mailto:orders@packaxis.ca" style="color: #4a7c59;">orders@packaxis.ca</a>
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>Packaxis Packaging Canada<br>
+            135 Eighth St, Toronto, ON M8V 3C8<br>
+            Phone: +1 844 844 4200</p>
+            <p style="margin-top: 10px;">
+                <a href="https://packaxis.ca" style="color: #4a7c59;">Visit Our Website</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>

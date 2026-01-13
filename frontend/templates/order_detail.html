@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container" role="main">
+  <h1 class="text-2xl font-bold mb-2">Order {{ order.order_number }}</h1>
+  <p class="text-gray-600 mb-6">Status: {{ order.get_status_display }}</p>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div class="lg:col-span-2">
+      <div class="card mb-6" aria-label="Order items">
+        <h2 class="text-xl font-semibold mb-3">Items</h2>
+        <div class="space-y-3">
+          {% for line in order.lines.all %}
+          <div class="flex justify-between">
+            <div>
+              <div class="font-medium">{{ line.product.name }}</div>
+              {% if line.variant %}
+              <div class="text-sm text-gray-600">Variant: {{ line.variant.sku }}</div>
+              {% endif %}
+            </div>
+            <div class="text-right">
+              <div class="text-sm">Qty: {{ line.quantity }}</div>
+              <div class="font-bold">${{ line.unit_price }} each</div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="card mb-6" aria-label="Shipment tracking">
+        <h2 class="text-xl font-semibold mb-3">Shipment</h2>
+        {% if order.shipments.all %}
+          {% for s in order.shipments.all %}
+          <div class="text-sm">
+            <div>Carrier: {{ s.carrier }}</div>
+            <div>Tracking #: <a href="{{ s.tracking_url }}" target="_blank" rel="noopener">{{ s.tracking_number }}</a></div>
+            <div>Status: {{ s.get_status_display }}</div>
+            {% if s.estimated_delivery %}<div>ETA: {{ s.estimated_delivery }}</div>{% endif %}
+          </div>
+          {% endfor %}
+        {% else %}
+          <p class="text-sm text-gray-600">No tracking available yet.</p>
+        {% endif %}
+      </div>
+
+      <div class="card" aria-label="Order notes">
+        <h2 class="text-xl font-semibold mb-3">Notes</h2>
+        {% for note in order.notes.all %}
+          {% if not note.is_internal %}
+          <div class="text-sm mb-2">{{ note.content }} <span class="text-gray-500">— {{ note.created_at }}</span></div>
+          {% endif %}
+        {% empty %}
+          <p class="text-sm text-gray-600">No notes.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <aside class="card p-4" aria-label="Order summary">
+      <h2 class="text-xl font-semibold mb-3">Summary</h2>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between"><span>Subtotal</span><span>${{ order.subtotal }}</span></div>
+        <div class="flex justify-between"><span>Tax</span><span>${{ order.tax_amount }}</span></div>
+        <div class="flex justify-between"><span>Shipping</span><span>${{ order.shipping_cost }}</span></div>
+        <div class="flex justify-between font-bold"><span>Total</span><span>${{ order.total }}</span></div>
+      </div>
+
+      <div class="mt-6" aria-label="Addresses">
+        <h3 class="font-semibold mb-2">Shipping Address</h3>
+        <p class="text-sm">{{ order.shipping_address.first_name }} {{ order.shipping_address.last_name }}</p>
+        <p class="text-sm">{{ order.shipping_address.address1 }}{% if order.shipping_address.address2 %}, {{ order.shipping_address.address2 }}{% endif %}</p>
+        <p class="text-sm">{{ order.shipping_address.city }}, {{ order.shipping_address.province }} {{ order.shipping_address.postal_code }}</p>
+
+        <h3 class="font-semibold mt-4 mb-2">Billing Address</h3>
+        <p class="text-sm">{{ order.billing_address.first_name }} {{ order.billing_address.last_name }}</p>
+        <p class="text-sm">{{ order.billing_address.address1 }}{% if order.billing_address.address2 %}, {{ order.billing_address.address2 }}{% endif %}</p>
+        <p class="text-sm">{{ order.billing_address.city }}, {{ order.billing_address.province }} {{ order.billing_address.postal_code }}</p>
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

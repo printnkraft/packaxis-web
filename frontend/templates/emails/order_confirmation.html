@@ -1,0 +1,195 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - Packaxis</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #fafaf2; }
+        .container { max-width: 650px; margin: 30px auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { background: linear-gradient(135deg, #4a7c59 0%, #2d5e3f 100%); color: white; padding: 40px 30px; text-align: center; }
+        .header-icon { font-size: 48px; margin-bottom: 10px; }
+        .logo { font-size: 26px; font-weight: bold; color: white; margin-bottom: 10px; }
+        .content { padding: 40px 30px; }
+        .success-badge { display: inline-flex; align-items: center; gap: 8px; background: #d2ff99; color: #292808; padding: 10px 20px; border-radius: 50px; font-weight: 600; margin-bottom: 20px; }
+        .order-number { font-size: 24px; font-weight: bold; color: #4a7c59; margin: 20px 0; font-family: monospace; }
+        .info-box { background: #f8f9fa; border-left: 4px solid #4a7c59; padding: 20px; border-radius: 6px; margin: 25px 0; }
+        .order-items { margin: 30px 0; }
+        .item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #e8dcc8; }
+        .item:last-child { border-bottom: none; }
+        .item-name { font-weight: 600; color: #292808; }
+        .item-qty { color: #666; font-size: 14px; margin-top: 4px; }
+        .item-price { font-weight: 600; color: #4a7c59; }
+        .totals { background: #fafaf2; padding: 20px; border-radius: 8px; margin: 25px 0; }
+        .total-row { display: flex; justify-content: space-between; padding: 8px 0; }
+        .total-row.final { font-size: 20px; font-weight: bold; color: #292808; border-top: 2px solid #4a7c59; padding-top: 15px; margin-top: 10px; }
+        .button { display: inline-block; padding: 14px 32px; background: #4a7c59; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; margin: 20px 0; }
+        .button:hover { background: #3d6b4a; }
+        .shipping-info { background: #fff8e1; border: 1px solid #ffd54f; border-radius: 8px; padding: 20px; margin: 25px 0; }
+        .shipping-info h3 { margin-top: 0; color: #292808; display: flex; align-items: center; gap: 8px; }
+        .timeline { display: flex; justify-content: space-between; margin: 30px 0; padding: 0 10px; }
+        .timeline-step { text-align: center; flex: 1; position: relative; }
+        .timeline-step::after { content: ''; position: absolute; top: 15px; left: 50%; width: 100%; height: 2px; background: #e0e0e0; z-index: 0; }
+        .timeline-step:last-child::after { display: none; }
+        .timeline-icon { width: 32px; height: 32px; border-radius: 50%; background: #e0e0e0; color: #666; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; position: relative; z-index: 1; }
+        .timeline-step.active .timeline-icon { background: #4a7c59; color: white; }
+        .timeline-label { font-size: 12px; color: #666; margin-top: 8px; }
+        .footer { text-align: center; padding: 30px; background: #f8f9fa; border-top: 1px solid #e8dcc8; color: #666; font-size: 14px; }
+        .footer a { color: #4a7c59; text-decoration: none; }
+        .social-links { margin: 15px 0; }
+        .social-links a { display: inline-block; margin: 0 8px; color: #4a7c59; }
+        @media only screen and (max-width: 600px) {
+            .container { margin: 10px; border-radius: 8px; }
+            .header { padding: 30px 20px; }
+            .content { padding: 25px 20px; }
+            .item { flex-direction: column; gap: 8px; }
+            .timeline { flex-direction: column; gap: 15px; }
+            .timeline-step::after { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="header-icon"></div>
+            <div class="logo"> Packaxis Packaging</div>
+            <h1 style="margin: 0; font-size: 28px;">Order Confirmed!</h1>
+        </div>
+
+        <div class="content">
+            <div class="success-badge">
+                <span></span>
+                <span>Your order has been received</span>
+            </div>
+
+            <p style="font-size: 16px; color: #333;">
+                Hi {% if order.customer %}{{ order.customer.first_name|default:"Valued Customer" }}{% else %}Valued Customer{% endif %},
+            </p>
+
+            <p>Thank you for your order! We're processing it right now and will ship it as soon as possible.</p>
+
+            <div class="info-box">
+                <p style="margin: 0; font-weight: 600; color: #292808;">Order Number</p>
+                <div class="order-number">#{{ order.order_number }}</div>
+                <p style="margin: 10px 0 0 0; color: #666; font-size: 14px;">
+                    Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|date:"g:i A" }}
+                </p>
+            </div>
+
+            <!-- Order Timeline -->
+            <div class="timeline">
+                <div class="timeline-step active">
+                    <div class="timeline-icon">1</div>
+                    <div class="timeline-label">Order Placed</div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-icon">2</div>
+                    <div class="timeline-label">Processing</div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-icon">3</div>
+                    <div class="timeline-label">Shipped</div>
+                </div>
+                <div class="timeline-step">
+                    <div class="timeline-icon">4</div>
+                    <div class="timeline-label">Delivered</div>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <h3 style="color: #292808; margin-top: 30px; margin-bottom: 15px;">Order Items</h3>
+            <div class="order-items">
+                {% for line in order.lines.all %}
+                <div class="item">
+                    <div>
+                        <div class="item-name">{{ line.product.name }}</div>
+                        <div class="item-qty">Quantity: {{ line.quantity }}</div>
+                    </div>
+                    <div class="item-price">${{ line.extended_price|floatformat:2 }}</div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Order Totals -->
+            <div class="totals">
+                <div class="total-row">
+                    <span>Subtotal:</span>
+                    <span>${{ order.subtotal|floatformat:2 }}</span>
+                </div>
+                {% if order.shipping_cost %}
+                <div class="total-row">
+                    <span>Shipping:</span>
+                    <span>${{ order.shipping_cost|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                {% if order.tax_amount %}
+                <div class="total-row">
+                    <span>Tax:</span>
+                    <span>${{ order.tax_amount|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                {% if order.discount_amount and order.discount_amount > 0 %}
+                <div class="total-row" style="color: #4a7c59;">
+                    <span>Discount:</span>
+                    <span>-${{ order.discount_amount|floatformat:2 }}</span>
+                </div>
+                {% endif %}
+                <div class="total-row final">
+                    <span>Total:</span>
+                    <span>${{ order.total_amount|floatformat:2 }}</span>
+                </div>
+            </div>
+
+            <!-- Shipping Information -->
+            {% if order.shipping_address_line1 %}
+            <div class="shipping-info">
+                <h3><span></span> Shipping Address</h3>
+                <p style="margin: 10px 0 0 0; line-height: 1.8;">
+                    {% if order.shipping_first_name %}{{ order.shipping_first_name }} {{ order.shipping_last_name }}<br>{% endif %}
+                    {{ order.shipping_address_line1 }}<br>
+                    {% if order.shipping_address_line2 %}{{ order.shipping_address_line2 }}<br>{% endif %}
+                    {{ order.shipping_city }}, {{ order.shipping_province }} {{ order.shipping_postal_code }}<br>
+                    Canada
+                </p>
+            </div>
+            {% endif %}
+
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="http://127.0.0.1:8000/account/orders/{{ order.order_number }}/" class="button">
+                    View Order Details
+                </a>
+            </div>
+
+            <div style="background: #f0f7f4; border-radius: 8px; padding: 20px; margin: 25px 0;">
+                <p style="margin: 0 0 10px 0; font-weight: 600; color: #292808;">
+                    <span style="font-size: 20px;"></span> What's Next?
+                </p>
+                <ul style="margin: 0; padding-left: 20px; color: #666;">
+                    <li>You'll receive a shipping confirmation email with tracking information</li>
+                    <li>Track your order anytime in your account dashboard</li>
+                    <li>Questions? Our support team is here to help</li>
+                </ul>
+            </div>
+
+            <p style="font-size: 14px; color: #666; margin-top: 30px;">
+                Thank you for choosing Packaxis for your sustainable packaging needs. We appreciate your business!
+            </p>
+        </div>
+
+        <div class="footer">
+            <p style="margin: 0 0 10px 0; font-weight: 600; color: #292808;">Packaxis Packaging Canada</p>
+            <p style="margin: 5px 0;">135 Eighth St, Toronto, ON M8V 3C8</p>
+            <p style="margin: 5px 0;">Phone: +1 844 844 4200</p>
+            <div style="margin: 15px 0;">
+                <a href="mailto:orders@packaxis.ca">Contact Us</a> | 
+                <a href="http://127.0.0.1:8000/account/orders/">My Orders</a> | 
+                <a href="http://127.0.0.1:8000/">Visit Website</a>
+            </div>
+            <p style="font-size: 12px; color: #999; margin-top: 15px;">
+                This email was sent to {% if order.customer %}{{ order.customer.email }}{% else %}{{ order.guest_email }}{% endif %}<br>
+                You're receiving this because you placed an order with Packaxis
+            </p>
+        </div>
+    </div>
+</body>
+</html>

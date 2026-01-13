@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<section class="section section-muted addresses-section">
+  <div class="container addresses-container">
+    <h1 class="page-title">Manage Addresses</h1>
+
+    {% if not user.is_authenticated %}
+      <div class="card card--notice">
+        <p class="card-body-text">You need to be logged in to manage your addresses.</p>
+        <a class="btn btn-primary" href="/accounts/login/">Login</a>
+      </div>
+    {% else %}
+    <div class="addresses-grid">
+      <div class="address-card">
+        <div class="card-header">
+          <h2 class="card-title-sm">Your Addresses</h2>
+        </div>
+        <div id="addresses-list" class="addresses-list">
+          <div class="loading-block">
+            <div class="loading-spinner" aria-hidden="true"></div>
+            <p class="text-muted">Loading addresses...</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="address-card">
+        <h2 id="form-title" class="card-title-sm">Add New Address</h2>
+        <p id="form-subtitle" class="text-muted">Fill in the details below.</p>
+        <form id="address-form" class="address-form">
+          <input type="hidden" id="address-id" />
+
+          <div class="grid grid-2">
+            <label class="field">
+              <span class="field__label">First Name</span>
+              <input id="first_name" required class="input" />
+            </label>
+            <label class="field">
+              <span class="field__label">Last Name</span>
+              <input id="last_name" required class="input" />
+            </label>
+          </div>
+
+          <label class="field">
+            <span class="field__label">Company (optional)</span>
+            <input id="company" class="input" />
+          </label>
+
+          <label class="field">
+            <span class="field__label">Address Line 1</span>
+            <input id="address1" required class="input" />
+          </label>
+          <label class="field">
+            <span class="field__label">Address Line 2 (optional)</span>
+            <input id="address2" class="input" />
+          </label>
+
+          <div class="grid grid-2">
+            <label class="field">
+              <span class="field__label">City</span>
+              <input id="city" required class="input" />
+            </label>
+            <label class="field">
+              <span class="field__label">Province</span>
+              <select id="province" required class="input"></select>
+            </label>
+          </div>
+
+          <div class="grid grid-2">
+            <label class="field">
+              <span class="field__label">Postal Code</span>
+              <input id="postal_code" required class="input" />
+            </label>
+            <label class="field">
+              <span class="field__label">Country</span>
+              <select id="country" required class="input">
+                <option value="CA" selected>Canada</option>
+                <option value="US">United States</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="field">
+            <span class="field__label">Phone (optional)</span>
+            <input id="phone" class="input" />
+          </label>
+
+          <div class="checkbox-row">
+            <label class="checkbox">
+              <input type="checkbox" id="is_default_shipping" />
+              <span>Default Shipping</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" id="is_default_billing" />
+              <span>Default Billing</span>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" id="save-btn" class="btn btn-primary">Save Address</button>
+            <button type="button" id="reset-btn" class="btn btn-secondary btn-ghost">Reset</button>
+          </div>
+
+          <p id="form-message" class="form-message" aria-live="polite">Saved successfully.</p>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}{% endblock %}

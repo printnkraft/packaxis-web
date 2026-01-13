@@ -1,0 +1,533 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Frequently Asked Questions | Help Center - PackAxis{% endblock %}
+
+{% block extra_head %}
+<!-- SEO Meta Tags -->
+<meta name="description" content="Find answers to common questions about PackAxis sustainable packaging products, ordering, shipping, customization, and more. Get help with your eco-friendly packaging needs.">
+<meta name="keywords" content="FAQ, frequently asked questions, packaging help, sustainable packaging, eco-friendly packaging questions, PackAxis support">
+<link rel="canonical" href="{{ request.build_absolute_uri }}">
+
+<!-- Open Graph -->
+<meta property="og:title" content="FAQ - PackAxis Help Center">
+<meta property="og:description" content="Find answers to common questions about sustainable packaging products and services.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+
+<!-- Schema.org FAQPage Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {% for category in categories %}{% for faq in category.faqs.all %}{% if faq.is_active %}
+    {
+      "@type": "Question",
+      "name": "{{ faq.question|escapejs }}",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "{{ faq.answer|striptags|escapejs }}"
+      }
+    }{% if not forloop.last or not forloop.parentloop.last %},{% endif %}
+    {% endif %}{% endfor %}{% endfor %}
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<nav class="breadcrumb-nav" aria-label="Breadcrumb">
+  <div class="container">
+    <ol class="breadcrumb-list">
+      <li class="breadcrumb-item">
+        <a href="{% url 'home' %}" class="breadcrumb-link">Home</a>
+      </li>
+      <li class="breadcrumb-separator" aria-hidden="true">
+        <span class="material-symbols-rounded">chevron_right</span>
+      </li>
+      <li class="breadcrumb-item breadcrumb-item--current">
+        <span aria-current="page">FAQ</span>
+      </li>
+    </ol>
+  </div>
+</nav>
+
+<!-- Hero Section -->
+<section class="fq-hero">
+  <div class="container">
+    <div class="fq-hero__content">
+      <span class="fq-hero__badge">
+        <span class="material-symbols-rounded">help</span>
+        Help Center
+      </span>
+      <h1 class="fq-hero__title">How Can We Help You?</h1>
+      <p class="fq-hero__subtitle">Find answers to frequently asked questions about our sustainable packaging solutions</p>
+      
+      <!-- Search Form -->
+      <div class="fq-search" role="search">
+        <div class="fq-search__wrapper">
+          <span class="material-symbols-rounded fq-search__icon">search</span>
+          <input 
+            type="search" 
+            id="faq-search-input"
+            name="q" 
+            placeholder="Search for answers..." 
+            value="{{ search_query|default:'' }}" 
+            class="fq-search__input"
+            autocomplete="off"
+            aria-label="Search FAQs"
+          >
+          <button type="button" id="faq-search-clear" class="fq-search__clear" aria-label="Clear search" style="display: none;">
+            <span class="material-symbols-rounded">close</span>
+          </button>
+        </div>
+        <div class="fq-search__hint">Press Enter to search, Escape to clear</div>
+      </div>
+    </div>
+  </div>
+  <div class="fq-hero__pattern"></div>
+</section>
+
+<!-- Main Content -->
+<section class="fq-section">
+  <div class="container">
+    <!-- Search Results Info -->
+    <div id="faq-search-info" class="fq-search-info" style="display: none;">
+      <div class="fq-search-info__content">
+        <span class="material-symbols-rounded">search</span>
+        <span>Showing results for "<strong id="faq-search-query-display"></strong>"</span>
+        <span class="fq-search-info__count">(<span id="faq-search-results-count">0</span> questions found)</span>
+      </div>
+      <button type="button" id="faq-clear-search-btn" class="fq-search-info__clear">
+        <span class="material-symbols-rounded">close</span>
+        Clear
+      </button>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="faq-loading" class="fq-loading" style="display: none;">
+      <div class="fq-loading__spinner"></div>
+      <span class="fq-loading__text">Searching questions...</span>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="fq-stats" id="faq-stats">
+      <div class="fq-stat">
+        <span class="fq-stat__icon">
+          <span class="material-symbols-rounded">category</span>
+        </span>
+        <div class="fq-stat__content">
+          <span class="fq-stat__number">{{ categories|length }}</span>
+          <span class="fq-stat__label">Categories</span>
+        </div>
+      </div>
+      <div class="fq-stat">
+        <span class="fq-stat__icon">
+          <span class="material-symbols-rounded">quiz</span>
+        </span>
+        <div class="fq-stat__content">
+          <span class="fq-stat__number" id="total-faq-count">50+</span>
+          <span class="fq-stat__label">Questions Answered</span>
+        </div>
+      </div>
+      <div class="fq-stat">
+        <span class="fq-stat__icon">
+          <span class="material-symbols-rounded">support_agent</span>
+        </span>
+        <div class="fq-stat__content">
+          <span class="fq-stat__number">24/7</span>
+          <span class="fq-stat__label">Support Available</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Filter Buttons -->
+    <div class="fq-filters">
+      <span class="fq-filters__label">Filter by category:</span>
+      <div class="fq-filters__list">
+        <button type="button" class="fq-filter-btn fq-filter-btn--active" data-category="">
+          <span class="material-symbols-rounded">apps</span>
+          All
+        </button>
+        {% for category in categories %}
+        <button type="button" class="fq-filter-btn" data-category="{{ category.slug }}">
+          {% if category.icon %}
+          <span>{{ category.icon }}</span>
+          {% else %}
+          <span class="material-symbols-rounded">folder</span>
+          {% endif %}
+          {{ category.name }}
+        </button>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- FAQ Accordion -->
+    <div class="fq-accordion" id="faq-accordion">
+      {% for category in categories %}
+      <div class="fq-category" data-category="{{ category.slug }}" id="category-{{ category.slug }}">
+        <div class="fq-category__header">
+          <div class="fq-category__info">
+            <div class="fq-category__icon">
+              {% if category.icon %}
+              <span>{{ category.icon }}</span>
+              {% else %}
+              <span class="material-symbols-rounded">folder</span>
+              {% endif %}
+            </div>
+            <div>
+              <h2 class="fq-category__title">{{ category.name }}</h2>
+              {% if category.description %}
+              <p class="fq-category__desc">{{ category.description }}</p>
+              {% endif %}
+            </div>
+          </div>
+          <span class="fq-category__count">{{ category.faqs.count }} question{{ category.faqs.count|pluralize }}</span>
+        </div>
+        
+        <div class="fq-category__items">
+          {% for faq in category.faqs.all %}
+          {% if faq.is_active %}
+          <details class="fq-item" data-faq-id="{{ faq.id }}">
+            <summary class="fq-item__header">
+              <span class="fq-item__question">{{ faq.question }}</span>
+              <span class="fq-item__toggle">
+                <span class="material-symbols-rounded">expand_more</span>
+              </span>
+            </summary>
+            <div class="fq-item__body">
+              <div class="fq-item__answer">
+                {{ faq.answer|safe }}
+              </div>
+              <div class="fq-item__footer">
+                <span class="fq-item__helpful-text">Was this helpful?</span>
+                <div class="fq-item__helpful-btns">
+                  <button type="button" class="fq-helpful-btn fq-helpful-btn--yes" data-faq-id="{{ faq.id }}">
+                    <span class="material-symbols-rounded">thumb_up</span>
+                    Yes
+                    <span class="fq-helpful-btn__count">({{ faq.helpful_count }})</span>
+                  </button>
+                  <button type="button" class="fq-helpful-btn fq-helpful-btn--no" data-faq-id="{{ faq.id }}">
+                    <span class="material-symbols-rounded">thumb_down</span>
+                    No
+                  </button>
+                </div>
+              </div>
+            </div>
+          </details>
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="fq-empty">
+        <span class="material-symbols-rounded fq-empty__icon">quiz</span>
+        <h3 class="fq-empty__title">No FAQs Available</h3>
+        <p class="fq-empty__text">We're working on adding frequently asked questions. Please check back soon or contact our support team.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Empty Search Results (Hidden by default) -->
+    <div id="faq-empty-results" class="fq-empty" style="display: none;">
+      <span class="material-symbols-rounded fq-empty__icon">search_off</span>
+      <h3 class="fq-empty__title">No Results Found</h3>
+      <p class="fq-empty__text">We couldn't find any questions matching your search. Try different keywords or browse our categories.</p>
+      <button type="button" class="btn btn-primary" onclick="clearFaqSearch()">View All FAQs</button>
+    </div>
+  </div>
+</section>
+
+<!-- Contact CTA Section -->
+<section class="fq-cta">
+  <div class="container">
+    <div class="fq-cta__card">
+      <div class="fq-cta__content">
+        <h2 class="fq-cta__title">Still Have Questions?</h2>
+        <p class="fq-cta__text">Can't find what you're looking for? Our customer support team is ready to help you with any questions about our sustainable packaging solutions.</p>
+        <div class="fq-cta__actions">
+          <a href="mailto:support@packaxis.com" class="btn fq-cta__btn fq-cta__btn--primary">
+            <span class="material-symbols-rounded">mail</span>
+            Email Support
+          </a>
+          <a href="tel:+1234567890" class="btn fq-cta__btn fq-cta__btn--secondary">
+            <span class="material-symbols-rounded">call</span>
+            Call Us
+          </a>
+        </div>
+      </div>
+      <div class="fq-cta__visual">
+        <div class="fq-cta__circle"></div>
+        <span class="material-symbols-rounded fq-cta__icon">support_agent</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+(function() {
+  'use strict';
+
+  // State
+  let searchTimeout = null;
+  let currentCategory = '';
+  let currentQuery = '{{ search_query|default:"" }}';
+
+  // DOM Elements
+  const searchInput = document.getElementById('faq-search-input');
+  const searchClear = document.getElementById('faq-search-clear');
+  const searchInfo = document.getElementById('faq-search-info');
+  const searchQueryDisplay = document.getElementById('faq-search-query-display');
+  const searchResultsCount = document.getElementById('faq-search-results-count');
+  const clearSearchBtn = document.getElementById('faq-clear-search-btn');
+  const loadingOverlay = document.getElementById('faq-loading');
+  const faqAccordion = document.getElementById('faq-accordion');
+  const faqStats = document.getElementById('faq-stats');
+  const emptyResults = document.getElementById('faq-empty-results');
+  const filterBtns = document.querySelectorAll('.fq-filter-btn');
+  const categoryBlocks = document.querySelectorAll('.fq-category');
+
+  // Utility: Highlight search terms
+  function highlightText(text, query) {
+    if (!query || !text) return text;
+    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return text.replace(regex, '<mark class="fq-highlight">$1</mark>');
+  }
+
+  // Utility: Update URL without reload
+  function updateURL(params) {
+    const url = new URL(window.location);
+    Object.keys(params).forEach(key => {
+      if (params[key]) {
+        url.searchParams.set(key, params[key]);
+      } else {
+        url.searchParams.delete(key);
+      }
+    });
+    window.history.pushState({}, '', url);
+  }
+
+  // Filter FAQs by search query and category
+  function filterFaqs(query = '', category = '') {
+    loadingOverlay.style.display = 'flex';
+    
+    setTimeout(() => {
+      let visibleCount = 0;
+      const queryLower = query.toLowerCase().trim();
+      
+      // Show/hide categories and items
+      categoryBlocks.forEach(catBlock => {
+        const catSlug = catBlock.dataset.category;
+        const items = catBlock.querySelectorAll('.fq-item');
+        let categoryVisible = false;
+        
+        // Check category filter
+        if (category && catSlug !== category) {
+          catBlock.style.display = 'none';
+          return;
+        }
+        
+        items.forEach(item => {
+          const question = item.querySelector('.fq-item__question');
+          const answer = item.querySelector('.fq-item__answer');
+          const originalQuestion = question.textContent;
+          const originalAnswerText = answer.textContent.toLowerCase();
+          
+          // Check search query
+          if (queryLower) {
+            const matchesQuestion = originalQuestion.toLowerCase().includes(queryLower);
+            const matchesAnswer = originalAnswerText.includes(queryLower);
+            
+            if (matchesQuestion || matchesAnswer) {
+              item.style.display = '';
+              item.classList.add('fq-item--animate');
+              categoryVisible = true;
+              visibleCount++;
+              
+              // Highlight matches
+              if (matchesQuestion) {
+                question.innerHTML = highlightText(originalQuestion, query);
+              }
+            } else {
+              item.style.display = 'none';
+            }
+          } else {
+            // No search query - show all items
+            item.style.display = '';
+            categoryVisible = true;
+            visibleCount++;
+            // Remove highlights
+            question.innerHTML = question.textContent;
+          }
+        });
+        
+        // Show/hide category based on whether it has visible items
+        catBlock.style.display = categoryVisible ? '' : 'none';
+      });
+      
+      // Update UI
+      if (query) {
+        searchInfo.style.display = 'flex';
+        searchQueryDisplay.textContent = query;
+        searchResultsCount.textContent = visibleCount;
+        faqStats.style.display = 'none';
+      } else {
+        searchInfo.style.display = 'none';
+        faqStats.style.display = '';
+      }
+      
+      // Show empty state if no results
+      if (visibleCount === 0 && (query || category)) {
+        emptyResults.style.display = 'flex';
+        faqAccordion.style.display = 'none';
+      } else {
+        emptyResults.style.display = 'none';
+        faqAccordion.style.display = '';
+      }
+      
+      // Update URL
+      updateURL({ q: query || null, category: category || null });
+      
+      loadingOverlay.style.display = 'none';
+    }, 150);
+  }
+
+  // Handle search input
+  function handleSearchInput(e) {
+    const query = e.target.value.trim();
+    
+    // Show/hide clear button
+    searchClear.style.display = query ? 'flex' : 'none';
+
+    // Debounce search
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      currentQuery = query;
+      filterFaqs(query, currentCategory);
+    }, 300);
+  }
+
+  // Handle search keydown
+  function handleSearchKeydown(e) {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      clearTimeout(searchTimeout);
+      currentQuery = searchInput.value.trim();
+      filterFaqs(currentQuery, currentCategory);
+    } else if (e.key === 'Escape') {
+      clearFaqSearch();
+    }
+  }
+
+  // Clear search
+  function clearFaqSearch() {
+    searchInput.value = '';
+    searchClear.style.display = 'none';
+    currentQuery = '';
+    filterFaqs('', currentCategory);
+    
+    // Remove all highlights
+    document.querySelectorAll('.fq-item__question').forEach(q => {
+      q.innerHTML = q.textContent;
+    });
+  }
+  window.clearFaqSearch = clearFaqSearch;
+
+  // Handle category filter click
+  function handleCategoryClick(e) {
+    const btn = e.target.closest('.fq-filter-btn');
+    if (!btn) return;
+
+    // Update active state
+    filterBtns.forEach(b => b.classList.remove('fq-filter-btn--active'));
+    btn.classList.add('fq-filter-btn--active');
+
+    currentCategory = btn.dataset.category || '';
+    filterFaqs(currentQuery, currentCategory);
+  }
+
+  // Handle helpful button clicks
+  function handleHelpfulClick(e) {
+    const btn = e.target.closest('.fq-helpful-btn');
+    if (!btn) return;
+    
+    const faqId = btn.dataset.faqId;
+    const isYes = btn.classList.contains('fq-helpful-btn--yes');
+    
+    if (isYes) {
+      const countEl = btn.querySelector('.fq-helpful-btn__count');
+      const currentCount = parseInt(countEl.textContent.replace(/[()]/g, '')) || 0;
+      countEl.textContent = `(${currentCount + 1})`;
+      btn.classList.add('fq-helpful-btn--voted');
+      btn.disabled = true;
+      
+      // Also disable the No button
+      const noBtn = btn.parentElement.querySelector('.fq-helpful-btn--no');
+      if (noBtn) noBtn.disabled = true;
+    } else {
+      btn.classList.add('fq-helpful-btn--voted');
+      btn.disabled = true;
+      
+      // Also disable the Yes button
+      const yesBtn = btn.parentElement.querySelector('.fq-helpful-btn--yes');
+      if (yesBtn) yesBtn.disabled = true;
+    }
+    
+    // Optional: Send to server
+    fetch(`/api/faq/${faqId}/helpful/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+      },
+      body: JSON.stringify({ helpful: isYes })
+    }).catch(() => {});
+  }
+
+  // Initialize
+  document.addEventListener('DOMContentLoaded', function() {
+    // Search input events
+    if (searchInput) {
+      searchInput.addEventListener('input', handleSearchInput);
+      searchInput.addEventListener('keydown', handleSearchKeydown);
+      
+      // Show clear button if there's initial value
+      if (searchInput.value.trim()) {
+        searchClear.style.display = 'flex';
+        filterFaqs(searchInput.value.trim(), currentCategory);
+      }
+    }
+
+    // Clear button events
+    if (searchClear) {
+      searchClear.addEventListener('click', clearFaqSearch);
+    }
+
+    if (clearSearchBtn) {
+      clearSearchBtn.addEventListener('click', clearFaqSearch);
+    }
+
+    // Category filter events
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', handleCategoryClick);
+    });
+    
+    // Helpful button events
+    faqAccordion.addEventListener('click', handleHelpfulClick);
+    
+    // Smooth open/close animation for details
+    faqAccordion.querySelectorAll('.fq-item').forEach(item => {
+      item.addEventListener('toggle', function() {
+        if (this.open) {
+          this.classList.add('fq-item--open');
+        } else {
+          this.classList.remove('fq-item--open');
+        }
+      });
+    });
+  });
+})();
+</script>
+{% endblock %}

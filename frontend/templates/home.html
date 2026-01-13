@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<!-- ============================================================================
+     PREMIUM HERO SECTION - Enterprise Design
+     ============================================================================ -->
+<section class="hero hero--premium" style="background-image: url('{% static 'images/hero-bg.jpg' %}');">
+  <!-- Dark overlay for text readability -->
+  <div class="hero__image-overlay"></div>
+  
+  <div class="container">
+    <div class="hero-grid hero-grid--two-col">
+      <div class="hero-content">
+        <div class="hero-badge">
+          <span class="material-symbols-rounded">verified</span>
+          <span>Wholesale B2B Supplier</span>
+        </div>
+        
+        <h1 class="hero-title hero-title--premium">
+          Wholesale Packaging Solutions for <span class="hero-accent">Canadian Businesses</span>
+        </h1>
+        
+        <p class="hero-subtitle hero-subtitle--premium">
+          Canada's trusted B2B supplier of sustainable packaging. Volume discounts up to 30%, NET 30 terms available, and dedicated account managers for orders $5,000+. Fast shipping across Canada.
+        </p>
+        
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat__number">30%</span>
+            <span class="hero-stat__label">Off Bulk Orders</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat__number">$2,000+</span>
+            <span class="hero-stat__label">Free Shipping</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat__number">NET 30</span>
+            <span class="hero-stat__label">Terms Available</span>
+          </div>
+        </div>
+        
+        <div class="hero-buttons hero-buttons--premium">
+          <a class="btn btn-primary btn--lg" href="/products/">
+            <span>Shop Wholesale</span>
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </a>
+          <a class="btn btn-secondary btn--lg" href="/contact/">
+            <span>Get B2B Quote</span>
+            <span class="material-symbols-rounded">request_quote</span>
+          </a>
+        </div>
+        
+        <div class="hero-industry">
+          <p class="hero-industry__label">Explore by Industry</p>
+          <div class="hero-industry__grid">
+            <a href="/products/?industry=retail" class="hero-industry-card">
+              <span class="material-symbols-rounded">shopping_bag</span>
+              <span>Retail</span>
+            </a>
+            <a href="/products/?industry=food" class="hero-industry-card">
+              <span class="material-symbols-rounded">restaurant</span>
+              <span>Food & Beverage</span>
+            </a>
+            <a href="/products/?industry=ecommerce" class="hero-industry-card">
+              <span class="material-symbols-rounded">local_shipping</span>
+              <span>E-Commerce</span>
+            </a>
+            <a href="/products/?industry=events" class="hero-industry-card">
+              <span class="material-symbols-rounded">celebration</span>
+              <span>Events</span>
+            </a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="hero-image-wrapper">
+        <img src="/media/other/hero-paper-bags.jpg" alt="Premium Eco-Friendly Packaging" class="hero-feature-image" loading="eager">
+      </div>
+    </div>
+  </div>
+  
+  <!-- Decorative background elements -->
+  <div class="hero__decoration hero__decoration--1"></div>
+  <div class="hero__decoration hero__decoration--2"></div>
+</section>
+
+<!-- ============================================================================
+     B2B BENEFITS SECTION - Built for Canadian Businesses
+     ============================================================================ -->
+<section class="b2b-benefits">
+  <div class="container">
+    <div class="b2b-benefits__header">
+      <span class="b2b-benefits__badge">Wholesale Program</span>
+      <h2 class="b2b-benefits__title">Built for Canadian Businesses</h2>
+      <p class="b2b-benefits__subtitle">Join 500+ businesses across Canada who save up to 30% on premium eco-friendly packaging with our wholesale program.</p>
+    </div>
+    
+    <div class="b2b-benefits__grid">
+      <div class="b2b-card" data-aos="fade-up" data-aos-delay="0">
+        <div class="b2b-card__icon">
+          <span class="material-symbols-rounded">percent</span>
+        </div>
+        <h3 class="b2b-card__title">Volume Discounts</h3>
+        <p class="b2b-card__desc">Up to 30% off on bulk orders. Tiered pricing automatically applied.</p>
+      </div>
+      
+      <div class="b2b-card" data-aos="fade-up" data-aos-delay="100">
+        <div class="b2b-card__icon">
+          <span class="material-symbols-rounded">local_shipping</span>
+        </div>
+        <h3 class="b2b-card__title">Free Shipping</h3>
+        <p class="b2b-card__desc">Free Canada-wide shipping on all orders over $2,000.</p>
+      </div>
+      
+      <div class="b2b-card" data-aos="fade-up" data-aos-delay="200">
+        <div class="b2b-card__icon">
+          <span class="material-symbols-rounded">calendar_month</span>
+        </div>
+        <h3 class="b2b-card__title">NET 30 Terms</h3>
+        <p class="b2b-card__desc">Flexible payment terms available for qualified businesses.</p>
+      </div>
+      
+      <div class="b2b-card" data-aos="fade-up" data-aos-delay="300">
+        <div class="b2b-card__icon">
+          <span class="material-symbols-rounded">support_agent</span>
+        </div>
+        <h3 class="b2b-card__title">Account Manager</h3>
+        <p class="b2b-card__desc">Dedicated support for orders over $5,000.</p>
+      </div>
+    </div>
+    
+    <div class="b2b-benefits__cta">
+      <a href="/contact/" class="btn btn-primary btn--lg">
+        <span>Apply for B2B Account</span>
+        <span class="material-symbols-rounded">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     PRODUCT CATEGORIES SECTION
+     ============================================================================ -->
+<section class="categories-section">
+  <div class="container">
+    <div class="categories-section__header">
+      <span class="categories-section__badge">Shop by Category</span>
+      <h2 class="categories-section__title">Premium Eco-Friendly Packaging Solutions</h2>
+      <p class="categories-section__subtitle">Discover our complete range of sustainable packaging. From paper bags to paper straws, all products are 100% recyclable with custom branding options available.</p>
+    </div>
+    
+    <div class="categories-grid">
+      {% for category in categories %}
+      <a href="/products/?category={{ category.slug }}" class="category-card">
+        <div class="category-card__image">
+          {% if category.image %}
+          <img src="{{ category.image.url }}" alt="{{ category.name }}" loading="lazy">
+          {% else %}
+          <div class="category-card__placeholder">
+            <span class="material-symbols-rounded">inventory_2</span>
+          </div>
+          {% endif %}
+        </div>
+        <div class="category-card__content">
+          <h3 class="category-card__title">{{ category.name }}</h3>
+          <span class="category-card__link">
+            Shop Now
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </span>
+        </div>
+      </a>
+      {% empty %}
+      <p class="categories-empty">No categories available.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     FEATURED PRODUCTS SECTION
+     ============================================================================ -->
+<section class="featured-products" id="featured">
+  <div class="container">
+    <div class="featured-products__header">
+      <span class="featured-products__badge">Bestsellers</span>
+      <h2 class="featured-products__title">Featured Products</h2>
+      <p class="featured-products__subtitle">Handpicked bestsellers from our premium collection</p>
+    </div>
+    
+    {% if featured_products %}
+    <div class="featured-products__grid">
+      {% for product in featured_products %}
+      <article class="product-card-minimal">
+        <a href="/products/{{ product.id }}/" class="product-card-minimal__link">
+          <div class="product-card-minimal__image">
+            {% if product.images.first %}
+            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}" loading="lazy">
+            {% else %}
+            <div class="product-card-minimal__placeholder">
+              <span class="material-symbols-rounded">inventory_2</span>
+            </div>
+            {% endif %}
+            
+            {% if product.stock_qty > 0 %}
+            <span class="product-card-minimal__badge product-card-minimal__badge--success">In Stock</span>
+            {% else %}
+            <span class="product-card-minimal__badge product-card-minimal__badge--danger">Out of Stock</span>
+            {% endif %}
+          </div>
+          
+          <div class="product-card-minimal__content">
+            <h3 class="product-card-minimal__title">{{ product.name }}</h3>
+            <p class="product-card-minimal__desc">{{ product.description|truncatewords:12 }}</p>
+            
+            <div class="product-card-minimal__footer">
+              <div class="product-card-minimal__price">
+                <span class="product-card-minimal__amount">${{ product.retail_price }}</span>
+                <span class="product-card-minimal__unit">per unit</span>
+              </div>
+            </div>
+          </div>
+        </a>
+        
+        <button 
+          data-add-to-cart
+          data-product-id="{{ product.id }}"
+          data-product-name="{{ product.name }}"
+          data-price="{{ product.retail_price }}"
+          data-image="{% if product.images.first %}{{ product.images.first.image.url }}{% endif %}"
+          class="product-card-minimal__cart-btn" 
+          {% if product.stock_qty == 0 %}disabled{% endif %}>
+          <span class="material-symbols-rounded">add_shopping_cart</span>
+        </button>
+      </article>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="featured-products__empty">
+      <span class="material-symbols-rounded">inventory_2</span>
+      <h3>No Products Available</h3>
+      <p>Featured products will appear here soon.</p>
+    </div>
+    {% endif %}
+    
+    <div class="featured-products__cta">
+      <a href="/products/" class="btn btn-primary btn--lg">
+        <span>View All Products</span>
+        <span class="material-symbols-rounded">arrow_forward</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     CUSTOM PACKAGING SOLUTIONS SECTION
+     ============================================================================ -->
+<section class="custom-solutions">
+  <div class="container">
+    <div class="custom-solutions__grid">
+      <div class="custom-solutions__content">
+        <span class="custom-solutions__badge">Custom Packaging</span>
+        <h2 class="custom-solutions__title">Custom Kraft Paper Bags & Eco-Friendly Packaging Solutions for <span class="text-accent">Canadian Businesses</span></h2>
+        <p class="custom-solutions__desc">Packaxis Packaging Canada specializes in custom branded paper bags, bulk kraft packaging, and sustainable shipping solutions for retail stores, restaurants, boutiques, and e-commerce businesses.</p>
+        
+        <ul class="custom-solutions__benefits">
+          <li>
+            <span class="material-symbols-rounded">check_circle</span>
+            <span><strong>FSC-Certified Kraft Paper</strong> – Premium quality & durability</span>
+          </li>
+          <li>
+            <span class="material-symbols-rounded">check_circle</span>
+            <span><strong>Custom Full-Color Printing</strong> – Stand out on shelves & social media</span>
+          </li>
+          <li>
+            <span class="material-symbols-rounded">check_circle</span>
+            <span><strong>Fast Canada-Wide Delivery</strong> – 5–7 day rush orders available</span>
+          </li>
+          <li>
+            <span class="material-symbols-rounded">check_circle</span>
+            <span><strong>Wholesale Bulk Pricing</strong> – Save 30–40% on large orders</span>
+          </li>
+          <li>
+            <span class="material-symbols-rounded">check_circle</span>
+            <span><strong>100% Recyclable</strong> – Meet eco-conscious customer expectations</span>
+          </li>
+          <li>
+            <span class="material-symbols-rounded">check_circle</span>
+            <span><strong>Dedicated Support</strong> – Expert team, 2-hour response guarantee</span>
+          </li>
+        </ul>
+        
+        <div class="custom-solutions__buttons">
+          <a href="/contact/" class="btn btn-primary btn--lg">
+            <span>Contact Us</span>
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </a>
+          <a href="/custom-printing-process/" class="btn btn-secondary btn--lg">
+            <span>How Custom Printing Works</span>
+            <span class="material-symbols-rounded">print</span>
+          </a>
+        </div>
+      </div>
+      
+      <div class="custom-solutions__image">
+        <img src="/media/other/hero-paper-bags.jpg" alt="Custom kraft paper bags with Packaxis branding" loading="lazy">
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================================
+     CONTACT CTA SECTION
+     ============================================================================ -->
+<section class="contact-section">
+  <div class="container">
+    <div class="contact-section__header">
+      <span class="contact-section__badge">Get in Touch</span>
+      <h2 class="contact-section__title">Your Packaging Solution Awaits</h2>
+      <p class="contact-section__subtitle">Ready to elevate your brand with custom paper bags? Get wholesale pricing on kraft bags, branded packaging, and eco-friendly solutions for businesses across Canada.</p>
+    </div>
+    
+    <div class="contact-section__grid">
+      <a href="tel:+18448444022" class="contact-card">
+        <div class="contact-card__accent"></div>
+        <div class="contact-card__inner">
+          <div class="contact-card__icon">
+            <span class="material-symbols-rounded">call</span>
+          </div>
+          <div class="contact-card__body">
+            <span class="contact-card__label">Call Us</span>
+            <span class="contact-card__value">+1 (844) 844-4022</span>
+          </div>
+          <div class="contact-card__cta">
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </div>
+        </div>
+      </a>
+      
+      <a href="mailto:hello@packaxis.ca" class="contact-card">
+        <div class="contact-card__accent"></div>
+        <div class="contact-card__inner">
+          <div class="contact-card__icon">
+            <span class="material-symbols-rounded">mail</span>
+          </div>
+          <div class="contact-card__body">
+            <span class="contact-card__label">Email Us</span>
+            <span class="contact-card__value">hello@packaxis.ca</span>
+          </div>
+          <div class="contact-card__cta">
+            <span class="material-symbols-rounded">arrow_forward</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

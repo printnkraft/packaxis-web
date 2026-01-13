@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "isolatedModules": true,
+    "allowJs": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "noEmit": true,
+    "baseUrl": "./frontend/src",
+    "paths": {
+      "@/*": ["./*"]
+    }
+  },
+  "include": ["frontend/src", "frontend/static/js/**/*"],
+  "exclude": ["node_modules", "backend"]
+}

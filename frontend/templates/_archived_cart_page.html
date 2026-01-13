@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<section class="section cart-section">
+  <div class="container">
+    <h1 class="section-title">Shopping Cart</h1>
+
+    <div class="cart-grid">
+      <div id="cart-items-container">
+        <div class="cart-card">
+          <div class="cart-item sample-item">
+            <img src="https://via.placeholder.com/120" alt="Product" class="cart-item__image">
+            <div class="cart-item__details">
+              <h3 class="cart-item__title">Sample Paper Bag</h3>
+              <p class="cart-item__sku">SKU: PB-001</p>
+              <div class="cart-qty">
+                <button data-cart-decrement data-product-id="1" class="qty-btn" aria-label="Decrease quantity">−</button>
+                <input type="number" value="1" min="1" readonly class="qty-input" aria-label="Quantity">
+                <button data-cart-increment data-product-id="1" class="qty-btn" aria-label="Increase quantity">+</button>
+              </div>
+              <button data-remove-from-cart data-product-id="1" class="cart-remove">Remove</button>
+            </div>
+            <div class="cart-item__price">$29.99</div>
+          </div>
+
+          <div id="empty-cart" class="cart-empty" aria-live="polite">
+            <div class="cart-empty__icon" aria-hidden="true">🛒</div>
+            <h3 class="cart-empty__title">Your cart is empty</h3>
+            <p class="cart-empty__subtitle">Add some eco-friendly paper bags to get started!</p>
+            <a href="/products/" class="btn btn-primary">Shop Products</a>
+          </div>
+        </div>
+      </div>
+
+      <aside class="cart-summary">
+        <div class="summary-card">
+          <h3 class="summary-title">Order Summary</h3>
+
+          <div class="summary-rows">
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span id="subtotal">$0.00</span>
+            </div>
+            <div class="summary-row">
+              <span>Shipping</span>
+              <span class="text-muted">Calculated at checkout</span>
+            </div>
+            <div class="summary-row">
+              <span>Tax (GST/HST)</span>
+              <span id="tax">$0.00</span>
+            </div>
+          </div>
+
+          <div class="summary-total">
+            <span>Total</span>
+            <span id="total">$0.00</span>
+          </div>
+
+          <a href="/checkout/" class="btn btn-primary btn-lg summary-action">Proceed to Checkout</a>
+          <a href="/products/" class="btn btn-secondary summary-secondary">Continue Shopping</a>
+
+          <div class="summary-coupon">
+            <p class="summary-helper">Have a promo code?</p>
+            <div class="summary-coupon__controls">
+              <input id="cart-coupon" type="text" placeholder="Enter code" class="summary-input" aria-label="Coupon code">
+              <button id="cart-apply-btn" type="button" class="btn btn-primary btn-ghost">Apply</button>
+            </div>
+            <div id="cart-coupon-message" class="summary-coupon__message" aria-live="polite"></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<script>
+// Cart functionality (placeholder - will be replaced with actual cart API)
+function updateQuantity(itemId, change) {
+  alert('Update quantity functionality coming soon!');
+}
+
+function removeFromCart(itemId) {
+  if (confirm('Remove this item from cart?')) {
+    alert('Remove from cart functionality coming soon!');
+  }
+}
+
+// Calculate totals
+function updateCartTotals() {
+  const subtotal = 29.99; // Placeholder
+  const tax = subtotal * 0.13; // 13% HST for Ontario
+  const total = subtotal + tax;
+  
+  document.getElementById('subtotal').textContent = '$' + subtotal.toFixed(2);
+  document.getElementById('tax').textContent = '$' + tax.toFixed(2);
+  document.getElementById('total').textContent = '$' + total.toFixed(2);
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+  updateCartTotals();
+
+  document.addEventListener('click', function(event) {
+    const decBtn = event.target.closest('[data-cart-decrement]');
+    const incBtn = event.target.closest('[data-cart-increment]');
+    const removeBtn = event.target.closest('[data-remove-from-cart]');
+
+    if (decBtn) {
+      const id = parseInt(decBtn.dataset.productId);
+      updateQuantity(id, -1);
+    }
+    if (incBtn) {
+      const id = parseInt(incBtn.dataset.productId);
+      updateQuantity(id, 1);
+    }
+    if (removeBtn) {
+      const id = parseInt(removeBtn.dataset.productId);
+      removeFromCart(id);
+    }
+  });
+
+  const applyBtn = document.getElementById('cart-apply-btn');
+  if (applyBtn) {
+    applyBtn.addEventListener('click', applyCartCoupon);
+  }
+});
+
+function getCookie(name) {
+  const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+  return match ? match[2] : '';
+}
+
+async function applyCartCoupon() {
+  const input = document.getElementById('cart-coupon');
+  const message = document.getElementById('cart-coupon-message');
+  const btn = document.getElementById('cart-apply-btn');
+  const code = (input.value || '').trim().toUpperCase();
+  if (!code) { message.style.display = 'block'; message.style.color = '#cc0000'; message.textContent = 'Please enter a code.'; return; }
+  const cartItems = Cart.getItems().map(i => ({ id: i.productId, price: i.price, quantity: i.quantity }));
+  try {
+    const resp = await fetch('/api/checkout/calculate/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+      body: JSON.stringify({ coupon_code: code, items: cartItems, postal_code: 'M5V 3A8', shipping_method: 'standard' })
+    });
+    const data = await resp.json();
+    if (data.success && data.discount > 0) {
+      message.style.display = 'block';
+      message.style.color = '#4a7c59';
+      message.textContent = `Coupon applied: -$${data.discount.toFixed(2)} (discount will apply at checkout)`;
+      btn.disabled = true;
+      try { localStorage.setItem('packaxis_coupon', code); } catch {}
+    } else {
+      message.style.display = 'block';
+      message.style.color = '#cc0000';
+      message.textContent = (data.errors && data.errors[0]) || 'Invalid coupon code';
+    }
+  } catch (e) {
+    message.style.display = 'block';
+    message.style.color = '#cc0000';
+    message.textContent = 'Failed to validate coupon. Please try again.';
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% comment %}
+Breadcrumb Navigation Component
+Usage: {% include 'components/breadcrumbs.html' with items=breadcrumb_items %}
+
+Expected format for items:
+[
+    {'name': 'Home', 'url': '/'},
+    {'name': 'Products', 'url': '/products/'},
+    {'name': 'Current Page', 'url': None}  # Last item has no URL (current page)
+]
+{% endcomment %}
+
+{% if items %}
+<nav aria-label="Breadcrumb" class="breadcrumb-nav">
+  <div class="container">
+    <ol class="breadcrumb-list" itemscope itemtype="https://schema.org/BreadcrumbList">
+      {% for item in items %}
+        <li class="breadcrumb-item{% if forloop.last %} breadcrumb-item--current{% endif %}" 
+            itemprop="itemListElement" 
+            itemscope 
+            itemtype="https://schema.org/ListItem">
+          {% if item.url and not forloop.last %}
+            <a href="{{ item.url }}" itemprop="item" class="breadcrumb-link">
+              <span itemprop="name">{{ item.name }}</span>
+            </a>
+          {% else %}
+            <span itemprop="name" aria-current="page">{{ item.name }}</span>
+          {% endif %}
+          <meta itemprop="position" content="{{ forloop.counter }}">
+          {% if not forloop.last %}
+            <span class="breadcrumb-separator" aria-hidden="true">
+              <span class="material-symbols-rounded">chevron_right</span>
+            </span>
+          {% endif %}
+        </li>
+      {% endfor %}
+    </ol>
+  </div>
+</nav>
+{% endif %}
