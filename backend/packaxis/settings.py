@@ -1,4 +1,4 @@
-﻿import os
+import os
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -163,7 +163,7 @@ AUTHENTICATION_BACKENDS = (
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = "optional"
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # Users must verify email before login
 ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_LOGOUT_REDIRECT_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/"
@@ -229,9 +229,16 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 ANYMAIL = {
     "SENDGRID_API_KEY": os.getenv("ANYMAIL_SENDGRID_API_KEY", ""),
 }
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"  # Use console for development
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "orders@packaxis.ca")
-SERVER_EMAIL = os.getenv("SERVER_EMAIL", "server@packaxis.ca")
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.hostinger.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "465"))
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "True") == "True"
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "False") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "support@packaxis.ca")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "support@packaxis.ca")
+SERVER_EMAIL = os.getenv("SERVER_EMAIL", "support@packaxis.ca")
+EMAIL_TIMEOUT = 30
 
 # Celery (disabled in development if Redis unavailable)
 if USE_REDIS:
@@ -266,6 +273,8 @@ if SENTRY_DSN:
         traces_sample_rate=0.2,
         send_default_pii=True,
     )
+
+
 
 
 
